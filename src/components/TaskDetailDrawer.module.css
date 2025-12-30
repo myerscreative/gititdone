@@ -30,7 +30,7 @@
 }
 
 .header {
-  padding: 24px;
+  padding: 24px !important;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
@@ -86,7 +86,7 @@
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 24px !important;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);

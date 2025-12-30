@@ -123,7 +123,7 @@ export default function TaskDetailDrawer({ task: initialTask, onClose }: Props) 
       <div className={styles.drawer}>
         
         {/* Header */}
-        <div className={styles.header}>
+        <div className={styles.header} style={{ padding: '24px' }}>
           <div style={{ flex: 1 }}>
             <div className={styles.meta} style={{ marginBottom: '4px' }}>
               <select 
@@ -162,8 +162,44 @@ export default function TaskDetailDrawer({ task: initialTask, onClose }: Props) 
                 marginBottom: '4px'
               }}
             />
-            <div className={styles.meta}>
-               Currently Ranked: <span style={{ color: '#fff', fontWeight: 700 }}>{task.calculatedScore}</span>
+            <div className={styles.meta} style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+               <span>Currently Ranked: <span style={{ color: '#fff', fontWeight: 700 }}>{task.calculatedScore}</span></span>
+               
+               {/* Tools */}
+               <div style={{ display: 'flex', gap: '8px' }}>
+                 <button 
+                    onClick={() => {
+                      const instructions = "You are a world-class sales scripting assistant. Help me write a script for: " + task.title;
+                      // In a real app this would open a modal, for now alert or log
+                      alert("Opening Scripting Assistant for: " + task.title); 
+                    }}
+                    style={{
+                      background: 'rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      borderRadius: '4px',
+                      padding: '4px 8px',
+                      color: 'var(--text-secondary)',
+                      fontSize: '0.7rem',
+                      cursor: 'pointer'
+                    }}
+                 >
+                   SCRIPTING
+                 </button>
+                 <button 
+                    onClick={() => alert("Pattern Interrupt Triggered!")}
+                    style={{
+                      background: 'rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      borderRadius: '4px',
+                      padding: '4px 8px',
+                      color: 'var(--text-secondary)',
+                      fontSize: '0.7rem',
+                      cursor: 'pointer'
+                    }}
+                 >
+                   PATTERN INT.
+                 </button>
+               </div>
             </div>
           </div>
           <button onClick={onClose} className={styles.closeBtn}>
@@ -171,7 +207,7 @@ export default function TaskDetailDrawer({ task: initialTask, onClose }: Props) 
           </button>
         </div>
 
-        <div className={styles.content}>
+        <div className={styles.content} style={{ padding: '24px' }}>
           {/* Math Visualization (Editable) */}
           <div className={styles.mathWell}>
             <div className={styles.sectionTitle}>Leverage Equation</div>
