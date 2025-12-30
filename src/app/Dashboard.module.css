@@ -1,0 +1,85 @@
+.dashboard {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.intro {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.dailyList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--spacing-xl);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border-subtle);
+}
+
+.activeCard {
+  background: var(--bg-panel); /* Dark Slate */
+  padding: var(--spacing-xl); /* Larger padding */
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  border-left: 6px solid var(--primary); /* Gold Left Border */
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5); /* Deep shadow */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.activeCard:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
+  border-color: var(--primary); /* Full border glow on hover */
+}
+
+.cardContent {
+  flex: 1;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+}
+
+.cardMeta {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.completeBtn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-weight: 600; 
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  transition: transform 0.1s;
+}
+
+.completeBtn:hover {
+  transform: scale(1.05);
+}

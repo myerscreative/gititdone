@@ -1,0 +1,272 @@
+.drawerOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  opacity: 0;
+  animation: fadeIn 0.2s forwards;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 500px;
+  max-width: 95vw;
+  height: 100vh;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border-subtle);
+  box-shadow: -10px 0 50px rgba(0, 0, 0, 0.8);
+  z-index: 1001;
+  transform: translateX(100%);
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.6;
+}
+
+.header {
+  padding: var(--spacing-4);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent);
+}
+
+.titleInput {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #F8FAFC;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  width: 100%;
+  padding: 0;
+  margin-bottom: 8px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  outline: none;
+  transition: border-bottom 0.2s;
+}
+
+.titleInput:focus {
+  border-bottom: 2px solid var(--accent);
+}
+
+.meta {
+  font-size: 0.95rem;
+  color: #94A3B8; /* Slate-400 */
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.sectionTitle {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #F3F4F6; /* Off-White Labels */
+  margin-bottom: var(--spacing-md);
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+/* Math Well - Darker box behind fields */
+.mathWell {
+  background: rgba(0, 0, 0, 0.3); /* Dark well */
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.mathGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.mathItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.mathLabel {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #F3F4F6; /* High Contract Off-White */
+  margin-bottom: 8px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
+.mathInput {
+  background: rgba(15, 23, 42, 0.6); /* Darker input bg */
+  border: 1px solid var(--border-subtle);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 1.5rem; /* Larger numbers */
+  font-weight: 700; /* Bold */
+  color: #F59E0B; /* Amber-500 */
+  width: 100%;
+  transition: all 0.2s ease;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.mathInput:focus {
+  border-color: #F59E0B; /* Amber Glow */
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+  background: rgba(15, 23, 42, 1);
+}
+
+.notesList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: var(--spacing-lg);
+}
+
+.noteItem {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 3px solid var(--border-subtle);
+  font-size: 1rem;
+  line-height: 1.6; /* Comfortable reading */
+  color: #E2E8F0; /* Slate-200 */
+}
+
+.noteTime {
+  font-size: 0.75rem;
+  color: #94A3B8;
+  margin-bottom: 6px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.redAlert {
+  background: #EF4444 !important; /* Solid Red */
+  color: #FFFFFF !important; /* High Contrast White */
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-left: 8px solid #B91C1C !important; /* Deep Red Border */
+}
+
+.redAlert .noteTime {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.magicWordsBox {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid #F59E0B;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: #F8FAFC;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.magicWordsTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #F59E0B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.noteInputArea {
+  margin-top: auto;
+  padding: 24px;
+  border-top: 1px solid var(--border-subtle);
+  background: #0B1120; /* Very dark slate */
+}
+
+.noteInput {
+  width: 100%;
+  background: #0F172A; /* Slate-900 */
+  border: 1px solid #334155; /* Slate-700 Border */
+  color: #F8FAFC;
+  padding: 16px;
+  border-radius: 8px;
+  min-height: 100px;
+  margin-bottom: 16px;
+  resize: vertical;
+  font-size: 1rem;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.noteInput:focus {
+  border-color: #F59E0B;
+  outline: none;
+}
+
+.addLogBtn {
+  background: #F8FAFC; /* High Contrast White/Grey */
+  color: #000; /* Black Text */
+  border: none;
+  padding: 12px 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.2s;
+}
+
+.addLogBtn:hover {
+  background: #E2E8F0;
+  transform: translateY(-1px);
+}
+
+.addLogBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@keyframes slideIn {
+  to { transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}

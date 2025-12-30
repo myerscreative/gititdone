@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Tasks & Subcollections (Recursive)
+    // Matches /tasks/docID and /tasks/docID/notes/noteID etc.
+    match /tasks/{taskId} {
+      // Check ownership on the task document itself
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      
+      // Allow access to subcollections (notes) if user owns the parent task
+      match /notes/{noteId} {
+        // We verify parent ownership by getting the parent task data
+        allow read, write: if request.auth != null && get(/databases/$(database)/documents/tasks/$(taskId)).data.userId == request.auth.uid;
+      }
+    }
+    
+    // Categories: Authenticated only
+    match /categories/{catId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
