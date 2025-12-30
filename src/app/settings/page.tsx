@@ -7,8 +7,11 @@ import { Trash2, Plus } from 'lucide-react';
 export default function SettingsPage() {
   const { categories, addCategory, removeCategory, loading, dbConnected, user } = useTasks();
   const [newCat, setNewCat] = useState('');
+  const [deletingCat, setDeletingCat] = useState<string | null>(null);
 
   const handleDelete = async (cat: string) => {
+    if (deletingCat) return;
+    
     const choice = window.confirm(
       `Delete "${cat}"? \n\nClick OK to move all associated tasks to "Uncategorized".\nClick Cancel to keep the category (or you can use a custom prompt for full deletion).`
     );
@@ -16,13 +19,22 @@ export default function SettingsPage() {
     if (choice) {
       // For this simple implementation, let's offer a second choice for full delete
       const subChoice = window.confirm(`Move tasks to "Uncategorized"?\n(OK = Move to Uncategorized, Cancel = Delete tasks entirely)`);
-      if (subChoice) {
-        await removeCategory(cat, 'migrate');
-      } else {
-        const finalConfirm = window.confirm("Are you SURE you want to DELETE ALL TASKS in this category?");
-        if (finalConfirm) {
-          await removeCategory(cat, 'delete');
+      
+      setDeletingCat(cat);
+      try {
+        if (subChoice) {
+          await removeCategory(cat, 'migrate');
+        } else {
+          const finalConfirm = window.confirm("Are you SURE you want to DELETE ALL TASKS in this category?");
+          if (finalConfirm) {
+            await removeCategory(cat, 'delete');
+          }
         }
+      } catch (e) {
+        console.error("Delete failed", e);
+        alert("Delete failed. See console.");
+      } finally {
+        setDeletingCat(null);
       }
     }
   };
@@ -147,9 +159,14 @@ export default function SettingsPage() {
                    }}
                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.7')}
-                   title="Delete Category"
+                   disabled={deletingCat === cat}
+                   title={deletingCat === cat ? "Deleting..." : "Delete Category"}
                  >
-                   <Trash2 size={16} />
+                   {deletingCat === cat ? (
+                     <div className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full" />
+                   ) : (
+                     <Trash2 size={16} />
+                   )}
                  </button>
               </div>
             ))}

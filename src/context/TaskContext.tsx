@@ -290,13 +290,17 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
   const removeCategory = async (cat: string, action: 'migrate' | 'delete' = 'migrate') => {
      if (!user) return;
+     setIsSyncing(true);
+     setSyncStatus('syncing');
      try {
-       console.log(`📤 ${action === 'migrate' ? 'Migrating' : 'Deleting'} tasks for category:`, cat);
+       console.log(`📤 ${action === 'migrate' ? 'Migrating' : 'Deleting'} tasks for category: "${cat}"`);
        const batch = writeBatch(db);
 
        // 1. Handle Tasks
        const taskQ = query(collection(db, 'tasks'), where('userId', '==', user.uid), where('category', '==', cat));
        const taskSnap = await getDocs(taskQ);
+       console.log(`   -> Found ${taskSnap.size} tasks to process.`);
+       
        taskSnap.forEach((tDoc) => {
          if (action === 'migrate') {
            batch.update(tDoc.ref, { category: 'Uncategorized' });
@@ -306,18 +310,28 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
        });
 
        // 2. Handle Category entry
+       // Ensure exact match on name
        const catQ = query(collection(db, 'categories'), where('userId', '==', user.uid), where('name', '==', cat)); 
        const catSnap = await getDocs(catQ);
+       console.log(`   -> Found ${catSnap.size} category document(s) to delete.`);
+       
+       if (catSnap.empty) {
+         console.warn(`⚠️ No category document found for "${cat}". Local state might be out of sync.`);
+         // Force a refresh of categories if possible?
+       }
+
        catSnap.forEach((d) => {
          batch.delete(d.ref);
        });
 
-       setIsSyncing(true);
        await batch.commit();
        console.log("✅ Category removal/migration complete");
+       setSyncStatus('success');
+       setTimeout(() => setSyncStatus('idle'), 2000);
      } catch (e) {
        console.error("❌ Remove Category Failed:", e);
-       alert("Error deleting category. Check connection.");
+       setSyncStatus('error');
+       alert("Error deleting category. Check console for details.");
      } finally {
        setIsSyncing(false);
      }
