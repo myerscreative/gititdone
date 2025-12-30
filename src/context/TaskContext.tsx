@@ -60,16 +60,29 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         setAuthLoading(false);
       } else {
         console.log("🔒 Attempting anonymous sign-in...");
-        // Enforce persistence to avoid losing data on refresh
+        
+        // 1. Try to set persistence (Best Effort)
         setPersistence(auth, browserLocalPersistence)
           .then(() => {
-            return signInAnonymously(auth);
+             console.log("💾 Persistence set to LOCAL");
           })
-          .then(() => setAuthLoading(false))
-          .catch((e) => {
-            console.error("Auth Failed:", e);
-            setAuthLoading(false);
-            setLoading(false);
+          .catch((err) => {
+             console.warn("⚠️ Persistence failed (continuing anyway):", err);
+          })
+          .finally(() => {
+             // 2. Always attempt sign in
+             signInAnonymously(auth)
+               .then((u) => {
+                  console.log("✅ Guest Sign-in Success:", u.user.uid);
+                  // setUser will be handled by onAuthStateChanged
+               })
+               .catch((e) => {
+                 console.error("❌ Auth Handshake Failed:", e);
+                 setSyncStatus('error');
+                 setAuthLoading(false);
+                 setLoading(false);
+                 alert("Authentication failed. Please check your connection or refresh.");
+               });
           });
       }
     });
