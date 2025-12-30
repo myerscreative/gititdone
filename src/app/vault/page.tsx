@@ -108,19 +108,19 @@ export default function Vault() {
              {/* Simple inputs for now to show UI */}
             <div>
               <label className={styles.label}>Outcome (0-10)</label>
-              <input type="number" className={styles.input} value={scoreVars.outcome} onChange={e => setScoreVars({...scoreVars, outcome: parseFloat(e.target.value)})} />
+              <input type="number" className={styles.input} value={scoreVars.outcome} onChange={e => setScoreVars({...scoreVars, outcome: parseFloat(e.target.value) || 0})} />
             </div>
              <div>
               <label className={styles.label}>Certainty (0-10)</label>
-              <input type="number" className={styles.input} value={scoreVars.certainty} onChange={e => setScoreVars({...scoreVars, certainty: parseFloat(e.target.value)})} />
+              <input type="number" className={styles.input} value={scoreVars.certainty} onChange={e => setScoreVars({...scoreVars, certainty: parseFloat(e.target.value) || 0})} />
             </div>
              <div>
               <label className={styles.label}>Delay (Time)</label>
-              <input type="number" className={styles.input} value={scoreVars.delay} onChange={e => setScoreVars({...scoreVars, delay: parseFloat(e.target.value)})} />
+              <input type="number" className={styles.input} value={scoreVars.delay} onChange={e => setScoreVars({...scoreVars, delay: parseFloat(e.target.value) || 1})} />
             </div>
              <div>
               <label className={styles.label}>Effort</label>
-              <input type="number" className={styles.input} value={scoreVars.effort} onChange={e => setScoreVars({...scoreVars, effort: parseFloat(e.target.value)})} />
+              <input type="number" className={styles.input} value={scoreVars.effort} onChange={e => setScoreVars({...scoreVars, effort: parseFloat(e.target.value) || 1})} />
             </div>
           </div>
           
