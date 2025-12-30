@@ -49,41 +49,64 @@ export default function BrainDump() {
     setCommitting(true);
     console.log("🚀 Starting Batch Commit to Vault...");
     
+    let successCount = 0;
+    
     try {
       // 1. Identify all used categories that are NOT in the global Firestore list
       const usedCategories = Array.from(new Set(parsedTasks.map(t => t.category)));
-      const categoriesToPersist = usedCategories.filter(cat => !categories.includes(cat));
+      const categoriesToPersist = usedCategories.filter(cat => cat && !categories.includes(cat));
       console.log(`📂 Categories to persist: ${categoriesToPersist.length}`, categoriesToPersist);
 
-      // 2. Persist them first
+      // 2. Persist new categories first (with timeout)
       for (const cat of categoriesToPersist) {
         console.log(`➕ Persisting new category: ${cat}`);
-        await addCategory(cat);
+        try {
+          await Promise.race([
+            addCategory(cat),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Category save timeout')), 10000))
+          ]);
+        } catch (catErr) {
+          console.warn(`⚠️ Category "${cat}" may not have saved:`, catErr);
+          // Continue anyway - the task can still be saved with this category name
+        }
       }
 
-      // 3. Add each task to Firestore
+      // 3. Add each task to Firestore (with timeout per task)
       console.log(`📤 Committing ${parsedTasks.length} tasks...`);
       for (const t of parsedTasks) {
         const rawScore = Number(t.hormoziScore);
         const est = isNaN(rawScore) ? 5 : Math.min(Math.max(rawScore, 1), 10);
         console.log(`   -> Adding task: ${t.title} (score: ${est})`);
-        await addTask(t.title, t.category || 'Uncategorized', {
-          outcome: est,
-          certainty: 9,
-          delay: 5,
-          effort: 5
-        }, t.magicWords || '');
+        try {
+          await Promise.race([
+            addTask(t.title, t.category || 'Other', {
+              outcome: est,
+              certainty: 9,
+              delay: 5,
+              effort: 5
+            }, t.magicWords || ''),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Task save timeout')), 10000))
+          ]);
+          successCount++;
+        } catch (taskErr) {
+          console.error(`❌ Failed to save task "${t.title}":`, taskErr);
+        }
       }
       
-      console.log("✅ Batch Commit Successful!");
-      setCommitted(true);
-      setParsedTasks([]);
-      setLocalNewCategories([]);
-      setBulkText('');
-      setTimeout(() => setCommitted(false), 5000);
+      console.log(`✅ Batch Commit Complete! ${successCount}/${parsedTasks.length} tasks saved.`);
+      
+      if (successCount > 0) {
+        setCommitted(true);
+        setParsedTasks([]);
+        setLocalNewCategories([]);
+        setBulkText('');
+        setTimeout(() => setCommitted(false), 5000);
+      } else {
+        alert('No tasks were saved. Please check your internet connection and try again.');
+      }
     } catch (e) {
       console.error("❌ Batch commit failed:", e);
-      alert("Batch commit failed. Please check your connection and try again.");
+      alert(`Commit error: ${e instanceof Error ? e.message : 'Unknown error'}. ${successCount} tasks were saved.`);
     } finally {
       setCommitting(false);
     }
