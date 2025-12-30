@@ -24,5 +24,6 @@ export interface Task {
   calculatedScore: number;
   peopleInvolved?: string[]; // For Scripting Assistant
   magicWords?: string; // Phil M. Jones Execution Script
+  isRecurring?: boolean; // If true, auto-unchecks after completion
   createdAt: number;
 }

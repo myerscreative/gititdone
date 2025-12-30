@@ -264,7 +264,23 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     if (!task) return;
     setIsSyncing(true);
     try {
-      await updateDoc(doc(db, 'tasks', id), { completed: !task.completed });
+      const newStatus = !task.completed;
+      await updateDoc(doc(db, 'tasks', id), { completed: newStatus });
+      
+      // Auto-Reset for Recurring Tasks
+      if (newStatus === true && task.isRecurring) {
+        console.log("🔄 Recurring Task Completed: triggering auto-reset.");
+        setTimeout(async () => {
+          try {
+            await updateDoc(doc(db, 'tasks', id), { completed: false });
+            // Ideally assume toast is handled by UI observing the change, or we could emit an event
+            console.log("🔄 Task reset for tomorrow.");
+          } catch(e) {
+            console.error("Failed to reset recurring task", e);
+          }
+        }, 2000); // 2 second delay for satisfaction
+      }
+      
     } finally {
       setIsSyncing(false);
     }

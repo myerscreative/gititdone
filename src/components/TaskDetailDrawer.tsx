@@ -163,7 +163,17 @@ export default function TaskDetailDrawer({ task: initialTask, onClose }: Props) 
               }}
             />
             <div className={styles.meta} style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-               <span>Currently Ranked: <span style={{ color: '#fff', fontWeight: 700 }}>{task.calculatedScore}</span></span>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span>Currently Ranked: <span style={{ color: '#fff', fontWeight: 700 }}>{task.calculatedScore}</span></span>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#fbbf24', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={task.isRecurring || false} 
+                      onChange={(e) => updateTask(task.id, { isRecurring: e.target.checked })}
+                    />
+                    Recurring Task (Auto-Reset)
+                  </label>
+               </div>
                
                {/* Tools */}
                <div style={{ display: 'flex', gap: '8px' }}>
