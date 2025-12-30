@@ -117,8 +117,23 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
   // Load Tasks (Scoped to User)
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      // If no user, we aren't loading data.
+      setLoading(false);
+      return;
+    }
     
+    // Safety timeout: If firestore hangs, stop loading after 8s
+    const safetyTimer = setTimeout(() => {
+      setLoading((current) => {
+        if (current) {
+           console.warn("⚠️ Task loading timed out (forcing UI to show)");
+           return false;
+        }
+        return current;
+      });
+    }, 8000);
+
     const q = query(
       collection(db, 'tasks'), 
       where('userId', '==', user.uid)
@@ -131,11 +146,16 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       })) as Task[];
       setTasks(liveTasks.sort((a,b) => b.calculatedScore - a.calculatedScore));
       setLoading(false);
+      clearTimeout(safetyTimer);
     }, (error) => {
       console.error("❌ Task Listener Error:", error);
       setLoading(false);
+      clearTimeout(safetyTimer);
     });
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      clearTimeout(safetyTimer);
+    };
   }, [user]);
 
   // Seed Default Categories (Scoped to User)
@@ -278,6 +298,12 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       console.error("Google Sign-In Error:", error);
       if (error.code === 'auth/popup-closed-by-user') return;
+      
+      if (error.code === 'auth/operation-not-allowed') {
+        alert("Google Sign-In is not enabled. Please go to the Firebase Console -> Authentication -> Sign-in method, select the support email, and click SAVE.");
+        return;
+      }
+      
       alert("Failed to sign in with Google. " + error.message);
     }
   };
