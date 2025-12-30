@@ -148,10 +148,12 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       })) as Task[];
       setTasks(liveTasks.sort((a,b) => b.calculatedScore - a.calculatedScore));
       setLoading(false);
+      setDbConnected(true);
       clearTimeout(safetyTimer);
     }, (error) => {
       console.error("❌ Task Listener Error:", error);
       setLoading(false);
+      setDbConnected(false);
       clearTimeout(safetyTimer);
     });
     return () => {
