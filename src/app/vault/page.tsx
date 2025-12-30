@@ -62,9 +62,9 @@ export default function Vault() {
   };
 
   // Sort tasks by Hormozi Score (Strictly high leverage first)
-  // filter out uncategorized tasks - they belong in Brain Dump
+  // Show all incomplete tasks
   const sortedTasks = tasks
-    .filter(t => t.category !== 'Uncategorized')
+    .filter(t => !t.completed)
     .sort((a, b) => b.calculatedScore - a.calculatedScore);
 
   return (
