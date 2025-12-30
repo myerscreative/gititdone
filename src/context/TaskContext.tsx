@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Task, TaskCategory, HormoziScore } from '@/types/task';
 import { db, auth } from '@/lib/firebase';
-import { signInAnonymously, onAuthStateChanged, User, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { signInAnonymously, onAuthStateChanged, User, setPersistence, browserLocalPersistence, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { 
   collection, 
   addDoc, 
@@ -26,6 +26,8 @@ interface TaskContextType {
   toggleDaily3: (id: string) => Promise<void>;
   toggleComplete: (id: string) => Promise<void>;
   reorderDaily3: (orderedIds: string[]) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  logout: () => Promise<void>;
   calculateScore: (variables: HormoziScore) => number;
   categories: string[];
   addCategory: (cat: string) => Promise<void>;
@@ -268,6 +270,28 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      // onAuthStateChanged will handle the user update
+    } catch (error: any) {
+      console.error("Google Sign-In Error:", error);
+      if (error.code === 'auth/popup-closed-by-user') return;
+      alert("Failed to sign in with Google. " + error.message);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      setCategories([]); 
+      setTasks([]); // clear local state
+    } catch (error) {
+       console.error("Logout Error:", error);
+    }
+  };
+
   const addCategory = async (cat: string) => {
     if (!user) {
       console.error('❌ Cannot add category: User not authenticated');
@@ -351,7 +375,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask, toggleDaily3, toggleComplete, reorderDaily3, calculateScore, categories, addCategory, removeCategory, user, loading, authLoading, isSyncing, syncStatus, dbConnected }}>
+    <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask, toggleDaily3, toggleComplete, reorderDaily3, calculateScore, categories, addCategory, removeCategory, user, loading, authLoading, isSyncing, syncStatus, dbConnected, loginWithGoogle, logout }}>
       {children}
     </TaskContext.Provider>
   );
