@@ -56,14 +56,15 @@ export default function BrainDump() {
       // 3. Add each task to Firestore
       console.log(`📤 Committing ${parsedTasks.length} tasks...`);
       for (const t of parsedTasks) {
-        const est = Math.min(t.hormoziScore, 10);
-        console.log(`   -> Adding task: ${t.title}`);
-        await addTask(t.title, t.category, { 
-          outcome: est, 
-          certainty: 9, 
-          delay: 5, 
-          effort: 5 
-        }, t.magicWords);
+        const rawScore = Number(t.hormoziScore);
+        const est = isNaN(rawScore) ? 5 : Math.min(Math.max(rawScore, 1), 10);
+        console.log(`   -> Adding task: ${t.title} (score: ${est})`);
+        await addTask(t.title, t.category || 'Uncategorized', {
+          outcome: est,
+          certainty: 9,
+          delay: 5,
+          effort: 5
+        }, t.magicWords || '');
       }
       
       console.log("✅ Batch Commit Successful!");
