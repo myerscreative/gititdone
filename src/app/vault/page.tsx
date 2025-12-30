@@ -77,58 +77,63 @@ export default function Vault() {
       </header>
 
       {/* Add Task Form */}
-      <section className="glass-panel" style={{ padding: 'var(--spacing-lg)', marginBottom: 'var(--spacing-xl)' }}>
-        <h2 style={{ fontSize: '1.2rem', marginBottom: 'var(--spacing-md)' }}>Add New Opportunity</h2>
+      <section className="glass-panel" style={{ padding: 'var(--spacing-xl)', marginBottom: 'var(--spacing-xl)' }}>
+        <h2 className={styles.sectionTitle}>Add New Opportunity</h2>
         <form onSubmit={handleSubmit}>
           <div className={styles.inputGroup}>
-            <label className={styles.label}>Task Title</label>
+            <label className={styles.label}>Opportunity Title</label>
             <input 
               className={styles.input}
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="What needs to be done?"
+              placeholder="What moves the needle?"
             />
           </div>
 
-          <div className={styles.inputGroup}>
-            <label className={styles.label}>Category</label>
-            <select 
-              className={styles.select}
-              value={category}
-              onChange={e => handleCategoryChange(e.target.value)}
-            >
-              <option value="" disabled>Select Category...</option>
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
-              <option value="ADD_NEW">+ ADD NEW</option>
-            </select>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-lg)' }}>
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Strategy Category</label>
+              <select 
+                className={styles.select}
+                value={category}
+                onChange={e => handleCategoryChange(e.target.value)}
+              >
+                <option value="" disabled>Select Strategy...</option>
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                <option value="ADD_NEW">+ Create New Strategy</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 'var(--spacing-lg)' }}>
+               <div style={{ flex: 1 }}>
+                  <label className={styles.label}>Projected Value</label>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)', letterSpacing: '0.05em' }}>
+                    {calculateScore(scoreVars).toFixed(1)}
+                  </div>
+               </div>
+               <button type="submit" className="btn btn-primary" style={{ padding: '14px 28px', fontSize: '0.9rem' }}>
+                  Commit to Vault
+               </button>
+            </div>
           </div>
 
-          {/* Score Inputs Placeholder - To be connected properly next */}
           <div className={styles.scoreGrid}>
-             {/* Simple inputs for now to show UI */}
             <div>
-              <label className={styles.label}>Outcome (0-10)</label>
+              <label className={styles.label}>Outcome</label>
               <input type="number" className={styles.input} value={scoreVars.outcome} onChange={e => setScoreVars({...scoreVars, outcome: parseFloat(e.target.value)})} />
             </div>
              <div>
-              <label className={styles.label}>Certainty (0-10)</label>
+              <label className={styles.label}>Certainty</label>
               <input type="number" className={styles.input} value={scoreVars.certainty} onChange={e => setScoreVars({...scoreVars, certainty: parseFloat(e.target.value)})} />
             </div>
              <div>
-              <label className={styles.label}>Delay (Time)</label>
+              <label className={styles.label}>Delay</label>
               <input type="number" className={styles.input} value={scoreVars.delay} onChange={e => setScoreVars({...scoreVars, delay: parseFloat(e.target.value)})} />
             </div>
              <div>
               <label className={styles.label}>Effort</label>
               <input type="number" className={styles.input} value={scoreVars.effort} onChange={e => setScoreVars({...scoreVars, effort: parseFloat(e.target.value)})} />
             </div>
-          </div>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-             <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                Projected Value: <strong style={{ color: 'var(--accent)' }}>{calculateScore(scoreVars)}</strong>
-             </div>
-             <button type="submit" className="btn btn-primary">Add to Vault</button>
           </div>
         </form>
       </section>
@@ -141,6 +146,7 @@ export default function Vault() {
       />
 
       {/* Task List */}
+      <h2 className={styles.sectionTitle}>High-Leverage Backlog</h2>
       <div className={styles.taskList}>
         {sortedTasks.map(task => (
           <div 
@@ -149,18 +155,22 @@ export default function Vault() {
             onClick={() => setSelectedTask(task)}
             style={{ cursor: 'pointer' }}
           >
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '8px' }}>{task.title} <span style={{fontSize:'0.8rem', color:'var(--text-muted)'}}>in {task.category}</span></div>
-              <LeverageBadge score={task.calculatedScore} />
+            <div style={{ flex: 1 }}>
+              <div className={styles.taskTitle}>{task.title}</div>
+              <div className={styles.taskMeta}>
+                <span className={styles.categoryTag}>{task.category}</span>
+                <span style={{ opacity: 0.2 }}>|</span>
+                <LeverageBadge score={task.calculatedScore} />
+              </div>
             </div>
             <div 
-              style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
-              onClick={(e) => e.stopPropagation()} // Prevent card click when clicking buttons
+              style={{ display: 'flex', gap: '16px', alignItems: 'center' }}
+              onClick={(e) => e.stopPropagation()} 
             >
                 <button
                   onClick={(e) => { e.stopPropagation(); setActiveMagicTask(task); setIsMagicOpen(true); }}
                   className="btn"
-                  style={{ fontSize: '1.2rem', padding: '4px 8px', background: 'transparent' }}
+                  style={{ fontSize: '1.4rem', padding: '0', background: 'transparent', opacity: 0.6 }}
                   title="Scripting Assistant"
                 >
                   🔮
@@ -168,19 +178,17 @@ export default function Vault() {
                 {!task.isDaily3 && !task.completed && (
                    <button 
                      onClick={(e) => { e.stopPropagation(); toggleDaily3(task.id); }}
-                     className="btn" 
-                     style={{ fontSize: '0.8rem', background: 'rgba(99, 102, 241, 0.2)', color: 'var(--primary)' }}
+                     className={styles.promoteBtn}
                    >
                      Promote to Daily 3
                    </button>
                 )}
                 {task.isDaily3 && (
-                    <span style={{ color: 'var(--accent)', fontSize: '0.8rem', alignSelf: 'center', fontWeight: 'bold' }}>IN DAILY 3</span>
+                    <span style={{ color: 'var(--accent)', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Active in Daily 3</span>
                 )}
                <button 
                   onClick={(e) => { e.stopPropagation(); deleteTask(task.id); }}
-                  className="btn" 
-                  style={{ padding: '4px 8px', color: 'var(--danger)', fontSize: '1.2rem' }}
+                  className={styles.deleteBtn}
                   title="Delete"
                 >
                   ×

@@ -40,69 +40,57 @@ export default function Home() {
           </div>
 
           <div className={styles.dailyList}>
-            {loading && tasks.length === 0 && (
-              <div style={{ color: 'var(--accent)', fontSize: '0.9rem', textAlign: 'center', margin: '1rem', animation: 'pulse 2s infinite' }}>
-                🔄 Syncing Active Missions...
-              </div>
-            )}
-            {daily3.length === 0 && !loading ? (
-              <div className={styles.emptyState}>
-                <h3>No Active Tasks</h3>
-                <p style={{ margin: '1rem 0', color: 'var(--text-secondary)' }}>
-                  Your list is empty. Go to the Vault and pick the top 3 highest leverage activities.
-                </p>
-                <Link href="/vault" className="btn btn-primary">
-                   Open Vault
-                </Link>
-              </div>
-            ) : (
-              daily3.map(task => (
-                <div 
-                  key={task.id} 
-                  className={styles.activeCard}
-                  onClick={() => setSelectedTask(task)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className={styles.cardContent}>
-                    <div className={styles.cardTitle}>{task.title}</div>
-                    <div className={styles.cardMeta}>
-                      {task.category} • Importance: {task.calculatedScore}
+            {[0, 1, 2].map((index) => {
+              const task = daily3[index];
+              return (
+                <div key={index} className={`${styles.slotWrapper} ${task ? styles.activeSlot : ''}`}>
+                  <div className={styles.slotLabel}>Mission Slot 0{index + 1}</div>
+                  
+                  {task ? (
+                    <div 
+                      className={styles.activeCard}
+                      onClick={() => setSelectedTask(task)}
+                    >
+                      <div className={styles.cardContent}>
+                        <div className={styles.cardTitle}>{task.title}</div>
+                        <div className={styles.cardMeta}>
+                          <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{task.category}</span>
+                          <span style={{ opacity: 0.3 }}>•</span>
+                          <span>Leverage Score: {task.calculatedScore}</span>
+                        </div>
+                      </div>
+                      <div className={styles.actions}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setActiveMagicTask(task); setIsMagicOpen(true); }}
+                          className="btn"
+                          style={{ fontSize: '1.4rem', padding: '8px', background: 'transparent' }}
+                          title="Scripting Assistant"
+                        >
+                          🔮
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); toggleDaily3(task.id); }}
+                          className={styles.deferBtn}
+                        >
+                          Defer
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); toggleComplete(task.id); }}
+                          className={styles.completeBtn}
+                        >
+                          Complete
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div className={styles.actions}>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setActiveMagicTask(task); setIsMagicOpen(true); }}
-                      className="btn"
-                      style={{ fontSize: '1.2rem', padding: '4px 8px', background: 'transparent' }}
-                      title="Scripting Assistant"
-                    >
-                      🔮
-                    </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); toggleDaily3(task.id); }}
-                      className="btn"
-                      style={{ background: 'transparent', color: 'var(--text-muted)' }}
-                    >
-                      Defer
-                    </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); toggleComplete(task.id); }}
-                      className={styles.completeBtn}
-                    >
-                      Complete
-                    </button>
-                  </div>
+                  ) : (
+                    <Link href="/vault" className={styles.emptySlotText}>
+                      <span style={{ fontSize: '1.5rem', color: 'var(--primary)' }}>+</span>
+                      Deploy High-Leverage Mission from Vault
+                    </Link>
+                  )}
                 </div>
-              ))
-            )}
-            
-            {daily3.length > 0 && daily3.length < 3 && (
-               <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                 <Link href="/vault" className="btn" style={{ background: 'var(--bg-card)' }}>
-                   + Select Next Task ({3 - daily3.length} remaining)
-                 </Link>
-               </div>
-            )}
+              );
+            })}
           </div>
           <DailyRealityCheck />
        </div>
