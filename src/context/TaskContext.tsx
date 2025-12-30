@@ -148,7 +148,9 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       })) as Task[];
       setTasks(liveTasks.sort((a,b) => b.calculatedScore - a.calculatedScore));
       setLoading(false);
-      setDbConnected(true);
+      // If data comes from cache, we are technically "Offline / Local Sync". 
+      // If fromCache is false, we are fully connected.
+      setDbConnected(!snapshot.metadata.fromCache);
       clearTimeout(safetyTimer);
     }, (error) => {
       console.error("❌ Task Listener Error:", error);
