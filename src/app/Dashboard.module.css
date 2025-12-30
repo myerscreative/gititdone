@@ -1,75 +1,103 @@
 .dashboard {
-  padding: var(--spacing-2xl);
-  max-width: 900px;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  max-width: 720px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2xl);
+  gap: var(--spacing-xl);
+  min-height: calc(100vh - 80px);
+  justify-content: center;
 }
 
 .intro {
   text-align: center;
-  margin-bottom: var(--spacing-lg);
+}
+
+.intro h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
 }
 
 .dailyList {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xl);
+  gap: var(--spacing-md);
 }
 
-/* Slot Visualization */
+/* Slot */
 .slotWrapper {
   position: relative;
-  min-height: 140px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 2px dashed rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-lg);
+  min-height: 100px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
 }
 
 .slotWrapper:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: var(--primary);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .activeSlot {
-  border-style: solid;
-  border-color: rgba(255, 255, 255, 0.1);
-  background: var(--bg-card);
+  border-color: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.03);
+}
+
+.activeSlot:hover {
+  border-color: rgba(245, 158, 11, 0.4);
 }
 
 .slotLabel {
   position: absolute;
-  top: -12px;
-  left: 24px;
-  background: #0B1120; /* Match main bg */
-  padding: 0 12px;
-  font-size: 0.75rem;
+  top: 50%;
+  left: -32px;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
   font-weight: 900;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
+  opacity: 0.3;
 }
 
-.emptySlotText {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  font-weight: 500;
+/* Empty Slot */
+.emptySlot {
+  width: 100%;
+  padding: var(--spacing-lg);
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
   opacity: 0.5;
+  transition: opacity 0.2s;
 }
 
-/* Active Card within Slot */
+.emptySlot:hover {
+  opacity: 0.8;
+}
+
+.emptyPlus {
+  font-size: 1.2rem;
+  color: var(--primary);
+  font-weight: 300;
+}
+
+/* Active Card */
 .activeCard {
   width: 100%;
-  height: 100%;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg) var(--spacing-xl);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -81,63 +109,75 @@
 }
 
 .cardTitle {
-  font-size: 1.3rem;
-  font-weight: 800;
-  margin-bottom: 4px;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: white;
+  margin-bottom: 6px;
 }
 
 .cardMeta {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
+.categoryTag {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.leverageBadge {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--primary);
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+/* Actions */
 .actions {
   display: flex;
-  gap: var(--spacing-md);
-  align-items: center;
-}
-
-.completeBtn {
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: var(--radius-md);
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-  transition: all 0.2s;
-}
-
-.completeBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+  gap: 8px;
 }
 
 .deferBtn {
   background: transparent;
-  color: var(--text-muted);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
   padding: 8px 16px;
-  border-radius: var(--radius-md);
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
   transition: all 0.2s;
 }
 
 .deferBtn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
   color: white;
 }
 
-.emptyState {
-  text-align: center;
-  padding: var(--spacing-2xl);
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: var(--radius-xl);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+.completeBtn {
+  background: var(--accent);
+  border: none;
+  color: black;
+  padding: 8px 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.completeBtn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
 }
