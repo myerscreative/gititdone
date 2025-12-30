@@ -44,20 +44,17 @@ export default function IntakePage() {
     // Add all tasks to Vault
     plan.forEach(t => {
       // Ensure category exists
-      addCategory(t.category);
+      addCategory(t.category || 'Uncategorized');
       // Add task with scores (we estimate vars from score)
-      // Logic: Score = (Outcome * Certainty) / (Delay * Effort)
-      // We only have the final score. We can fake the vars or update logic.
-      // Let's fake vars to match the score roughly for the UI.
-      // E.g. Score 9 -> Outcome 9, Certainty 9, Delay 3, Effort 3 => 81/9 = 9
-      const est = Math.min(t.hormoziScore, 10);
-      addTask(t.title, t.category, { 
-        outcome: est, 
-        certainty: 9, 
-        delay: 5, 
-        effort: 5 
-      }, t.magicWords); 
-      // Note: This logic is loose, but sufficient for intake.
+      // Validate and clamp the score to prevent NaN
+      const rawScore = Number(t.hormoziScore);
+      const est = isNaN(rawScore) ? 5 : Math.min(Math.max(rawScore, 1), 10);
+      addTask(t.title, t.category || 'Uncategorized', {
+        outcome: est,
+        certainty: 9,
+        delay: 5,
+        effort: 5
+      }, t.magicWords || '');
     });
     setCommitted(true);
     setTimeout(() => {

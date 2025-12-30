@@ -62,7 +62,9 @@ export default function Vault() {
   };
 
   // Sort tasks by Hormozi Score (Strictly high leverage first)
+  // Show all incomplete tasks
   const sortedTasks = [...tasks]
+    .filter(t => !t.completed)
     .sort((a, b) => b.calculatedScore - a.calculatedScore);
 
   return (
