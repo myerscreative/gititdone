@@ -20,21 +20,22 @@ import {
 
 interface TaskContextType {
   tasks: Task[];
-  addTask: (title: string, category?: TaskCategory, scoreVariables?: HormoziScore, magicWords?: string) => void;
-  updateTask: (id: string, updates: Partial<Task>) => void;
-  deleteTask: (id: string) => void;
-  toggleDaily3: (id: string) => void;
-  toggleComplete: (id: string) => void;
+  addTask: (title: string, category?: TaskCategory, scoreVariables?: HormoziScore, magicWords?: string) => Promise<void>;
+  updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
+  toggleDaily3: (id: string) => Promise<void>;
+  toggleComplete: (id: string) => Promise<void>;
   calculateScore: (variables: HormoziScore) => number;
   categories: string[];
-  addCategory: (cat: string) => void;
-  removeCategory: (cat: string, action?: 'migrate' | 'delete') => void;
+  addCategory: (cat: string) => Promise<void>;
+  removeCategory: (cat: string, action?: 'migrate' | 'delete') => Promise<void>;
   dbConnected: boolean;
   user: User | null;
   loading: boolean;
   authLoading: boolean;
   isSyncing: boolean;
 }
+
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
