@@ -5,7 +5,7 @@ import { useTasks } from '@/context/TaskContext';
 import { Trash2, Plus } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { categories, addCategory, removeCategory, loading, dbConnected, user, loginWithGoogle, logout } = useTasks();
+  const { categories, addCategory, removeCategory, loading: ctxLoading, dbConnected, user, loginWithGoogle, logout, scanForOrphans, claimOrphans } = useTasks();
   const [newCat, setNewCat] = useState('');
   const [deletingCat, setDeletingCat] = useState<string | null>(null);
 
@@ -141,21 +141,28 @@ export default function SettingsPage() {
                </button>
              </div>
            ) : (
-             <div style={{ marginTop: '16px' }}>
                 <button 
                   onClick={logout}
                   style={{
-                    background: 'transparent',
-                    border: '1px solid var(--border-subtle)',
-                    color: 'var(--text-secondary)',
+                    background: 'rgba(255,255,255,0.1)',
+                    color: '#ef4444',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
                     padding: '8px 16px',
                     borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '0.8rem'
+                    cursor: 'pointer'
                   }}
                 >
                   Sign Out
                 </button>
+                
+                {/* Data Rescue Tool */}
+                <div style={{ marginTop: '24px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '16px' }}>
+                   <h4 style={{ margin: '0 0 8px 0', color: '#a855f7' }}>Data Rescue</h4>
+                   <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginBottom: '12px' }}>
+                     Can't see your old tasks? They might be stranded in the database.
+                   </p>
+                   <OrphanScanner scan={scanForOrphans} claim={claimOrphans} />
+                </div>
              </div>
            )}
         </div>
@@ -224,5 +231,80 @@ export default function SettingsPage() {
          </div>
       </section>
     </main>
+  );
+}
+
+function OrphanScanner({ scan, claim }: { scan: () => Promise<number>, claim: () => Promise<void> }) {
+  const [status, setStatus] = useState<'idle' | 'scanning' | 'found' | 'error'>('idle');
+  const [count, setCount] = useState(0);
+
+  const handleScan = async () => {
+    setStatus('scanning');
+    try {
+      const found = await scan();
+      setCount(found);
+      setStatus('found');
+    } catch (e: any) {
+      if (e.message === 'PERMISSION_DENIED') {
+        setStatus('error');
+      } else {
+        alert("Scan error: " + e.message);
+        setStatus('idle');
+      }
+    }
+  };
+
+  const handleClaim = async () => {
+    if (!confirm(`Are you sure you want to claim ${count} tasks? This will move them to your account.`)) return;
+    await claim();
+    setCount(0);
+    setStatus('idle');
+    alert("Tasks claimed successfully!");
+  };
+
+  if (status === 'error') {
+    return (
+      <div style={{ padding: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid #ef4444', borderRadius: '6px' }}>
+        <p style={{ color: '#ef4444', fontSize: '0.8rem', margin: 0 }}>
+          <strong>Permission Denied.</strong><br/>
+          I can't see other users' data. To fix this, you must temporarily allow reads in Firebase Console.
+        </p>
+      </div>
+    );
+  }
+
+  if (status === 'found') {
+    return (
+      <div style={{ padding: '12px', background: 'rgba(168, 85, 247, 0.1)', border: '1px solid #a855f7', borderRadius: '6px' }}>
+        <p style={{ color: '#d8b4fe', fontSize: '0.9rem', margin: '0 0 8px 0' }}>
+          Found <strong>{count}</strong> orphaned tasks.
+        </p>
+        <button 
+          onClick={handleClaim}
+          style={{ width: '100%', padding: '8px', background: '#a855f7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
+        >
+          Claim All Data
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button 
+      onClick={handleScan}
+      disabled={status === 'scanning'}
+      style={{
+        width: '100%',
+        padding: '10px',
+        background: 'rgba(168, 85, 247, 0.1)',
+        color: '#a855f7',
+        border: '1px dashed #a855f7',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '0.9rem'
+      }}
+    >
+      {status === 'scanning' ? 'Scanning Database...' : 'Scan for Missing Data'}
+    </button>
   );
 }

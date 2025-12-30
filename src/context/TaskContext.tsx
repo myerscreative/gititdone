@@ -28,6 +28,8 @@ interface TaskContextType {
   reorderDaily3: (orderedIds: string[]) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  scanForOrphans: () => Promise<number>;
+  claimOrphans: () => Promise<void>;
   calculateScore: (variables: HormoziScore) => number;
   categories: string[];
   addCategory: (cat: string) => Promise<void>;
@@ -334,6 +336,51 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // --- Data Rescue ---
+  const scanForOrphans = async (): Promise<number> => {
+    if (!user) return 0;
+    try {
+      // Attempt to read ALL tasks. This will FAIL if rules are strict.
+      const snap = await getDocs(collection(db, 'tasks'));
+      const orphans = snap.docs.filter(d => d.data().userId !== user.uid);
+      console.log(`🔎 Scan complete. Found ${orphans.length} orphans out of ${snap.size} total docs.`);
+      return orphans.length;
+    } catch (e: any) {
+      console.error("Scan Failed:", e);
+      if (e.code === 'permission-denied') {
+        throw new Error("PERMISSION_DENIED"); 
+      }
+      throw e;
+    }
+  };
+
+  const claimOrphans = async () => {
+    if (!user) return;
+    setIsSyncing(true);
+    try {
+      const snap = await getDocs(collection(db, 'tasks'));
+      const orphans = snap.docs.filter(d => d.data().userId !== user.uid);
+      
+      const batch = writeBatch(db);
+      orphans.forEach(doc => {
+         batch.update(doc.ref, { userId: user.uid });
+      });
+      await batch.commit();
+      console.log(`✅ Claimed ${orphans.length} tasks.`);
+      setSyncStatus('success');
+      setTimeout(() => setSyncStatus('idle'), 2000);
+      
+      // Refresh tasks manually since the listener queries by UserID and might not catch the updates immediately if it doesn't see the old ones
+      // Actually, once updated, the listener SHOULD see them because userId matches now.
+    } catch (e) {
+       console.error("Claim Failed:", e);
+       alert("Failed to claim tasks: " + e);
+    } finally {
+       setIsSyncing(false);
+    }
+  };
+
+
   const addCategory = async (cat: string) => {
     if (!user) {
       console.error('❌ Cannot add category: User not authenticated');
@@ -417,7 +464,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask, toggleDaily3, toggleComplete, reorderDaily3, calculateScore, categories, addCategory, removeCategory, user, loading, authLoading, isSyncing, syncStatus, dbConnected, loginWithGoogle, logout }}>
+    <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask, toggleDaily3, toggleComplete, reorderDaily3, calculateScore, categories, addCategory, removeCategory, user, loading, authLoading, isSyncing, syncStatus, dbConnected, loginWithGoogle, logout, scanForOrphans, claimOrphans }}>
       {children}
     </TaskContext.Provider>
   );
