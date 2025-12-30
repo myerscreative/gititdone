@@ -25,6 +25,7 @@ interface TaskContextType {
   deleteTask: (id: string) => Promise<void>;
   toggleDaily3: (id: string) => Promise<void>;
   toggleComplete: (id: string) => Promise<void>;
+  reorderDaily3: (orderedIds: string[]) => Promise<void>;
   calculateScore: (variables: HormoziScore) => number;
   categories: string[];
   addCategory: (cat: string) => Promise<void>;
@@ -230,6 +231,26 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const reorderDaily3 = async (orderedIds: string[]) => {
+    if (!user) return;
+    setIsSyncing(true);
+    setSyncStatus('syncing');
+    try {
+      // Update each task with its new order position
+      const updates = orderedIds.map((id, index) => 
+        updateDoc(doc(db, 'tasks', id), { daily3Order: index })
+      );
+      await Promise.all(updates);
+      setSyncStatus('success');
+      setTimeout(() => setSyncStatus('idle'), 1500);
+    } catch (e) {
+      console.error('❌ Reorder failed:', e);
+      setSyncStatus('error');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const addCategory = async (cat: string) => {
     if (!user) {
       console.error('❌ Cannot add category: User not authenticated');
@@ -299,7 +320,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask, toggleDaily3, toggleComplete, calculateScore, categories, addCategory, removeCategory, user, loading, authLoading, isSyncing, syncStatus, dbConnected }}>
+    <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask, toggleDaily3, toggleComplete, reorderDaily3, calculateScore, categories, addCategory, removeCategory, user, loading, authLoading, isSyncing, syncStatus, dbConnected }}>
       {children}
     </TaskContext.Provider>
   );
