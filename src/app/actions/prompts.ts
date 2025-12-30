@@ -37,13 +37,13 @@ export const BRAIN_DUMP_TRIAGE_PROMPT = (categories: string[], text: string) => 
   Task: Parse the "Brain Dump" into actionable tasks. Split multi-part thoughts.
   
   Categorization Logic (CRITICAL):
-  1. Priority Categories: [Income Generation, NILUMI, Patio Doors, CRM/Brand New Habit]. Try to fit tasks here first.
+  1. Priority Categories: [Income Generation, NILUMI Switch, Patio Doors, CRM, Strategy]. Try to fit tasks here first.
   2. Keyword Mapping:
-     - If text mentions "Nilumi", "switch", or "licensee" -> Category: NILUMI
+     - If text mentions "Nilumi", "switch", or "licensee" -> Category: NILUMI Switch
      - If text mentions "quotes", "builders", "contractors", or "sales" -> Category: Income Generation
      - If text mentions "Window World" or "folding doors" -> Category: Patio Doors
   3. Existing Categories: [${categories.join(', ')}]
-  4. Only suggest a new category (e.g., "Home Maintenance") if it absolutely doesn't fit the above.
+  4. NEVER use the word "Uncategorized". Use "Strategy" or "Other" if no match is found.
 
   Return JSON array ONLY. Be extremely concise.
   Format: { "title": string, "category": string, "hormoziScore": number(1-10), "magicWords": string }[]
