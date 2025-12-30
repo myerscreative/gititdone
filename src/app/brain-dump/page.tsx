@@ -26,7 +26,10 @@ export default function BrainDump() {
       setParsedTasks(results);
       
       // Identify any AI-suggested categories that aren't in the global list
-      const suggested = results.map(r => r.category).filter(cat => !categories.includes(cat));
+      // Filter out empty/null/undefined categories
+      const suggested = results
+        .map(r => r.category)
+        .filter(cat => cat && cat.trim() && !categories.includes(cat));
       setLocalNewCategories(Array.from(new Set(suggested)));
     } catch (e: any) {
       alert("The Strategic Brain is resetting. Please try again in a moment.");
@@ -89,17 +92,20 @@ export default function BrainDump() {
     const updated = [...parsedTasks];
     if (newCat === 'ADD_NEW') {
       const name = prompt("Enter new category name:");
-      if (name) {
-        updated[index].category = name;
+      if (name && name.trim()) {
+        const trimmed = name.trim();
+        updated[index].category = trimmed;
         // Add to local session categories so other cards see it
-        if (!categories.includes(name) && !localNewCategories.includes(name)) {
-          setLocalNewCategories([...localNewCategories, name]);
+        if (!categories.includes(trimmed) && !localNewCategories.includes(trimmed)) {
+          setLocalNewCategories([...localNewCategories, trimmed]);
         }
+        setParsedTasks(updated);
       }
-    } else {
+      // Don't update if user cancelled or entered empty string
+    } else if (newCat && newCat !== '') {
       updated[index].category = newCat;
+      setParsedTasks(updated);
     }
-    setParsedTasks(updated);
   };
 
   const updateParsedTaskTitle = (index: number, newTitle: string) => {
@@ -166,9 +172,9 @@ export default function BrainDump() {
             <div key={i} className={styles.reviewCard}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <select 
+                  <select
                     className={styles.catDropdown}
-                    value={(categories.includes(task.category) || localNewCategories.includes(task.category)) ? task.category : 'OTHER'}
+                    value={task.category || ''}
                     onChange={(e) => updateParsedTaskCategory(i, e.target.value)}
                     style={{
                       background: 'rgba(255,184,0,0.1)',
@@ -182,11 +188,12 @@ export default function BrainDump() {
                       cursor: 'pointer'
                     }}
                   >
+                    {!task.category && <option value="">Select Category...</option>}
                     {categories.map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                     {localNewCategories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
+                      <option key={`new-${cat}`} value={cat}>{cat} (new)</option>
                     ))}
                     <option value="ADD_NEW">+ ADD NEW</option>
                   </select>
