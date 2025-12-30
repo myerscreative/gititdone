@@ -39,7 +39,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) {
+  if (ctxLoading) {
     return (
       <main className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
          <h2 style={{ color: 'var(--primary)', letterSpacing: '0.1em' }}>Loading Settings...</h2>
@@ -141,6 +141,7 @@ export default function SettingsPage() {
                </button>
              </div>
            ) : (
+             <div style={{ marginTop: '12px' }}>
                 <button 
                   onClick={logout}
                   style={{
