@@ -7,6 +7,7 @@ import styles from './Dashboard.module.css'
 import { Task } from '@/types/task'
 import TaskDetailDrawer from '@/components/TaskDetailDrawer'
 import MagicWordsModal from '@/components/MagicWordsModal'
+import SyncIndicator from '@/components/SyncIndicator'
 
 export default function Home() {
   const { tasks, toggleDaily3, toggleComplete, loading } = useTasks();
@@ -31,7 +32,10 @@ export default function Home() {
     <main className="container">
        <div className={styles.dashboard}>
           <div className={styles.intro}>
-            <h1>Your Daily 3</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h1>Your Daily 3</h1>
+              <SyncIndicator />
+            </div>
             <p className={styles.subtitle}>
               {completedToday > 0 ? `${completedToday} completed today` : 'Focus. Execute. Ship.'}
             </p>

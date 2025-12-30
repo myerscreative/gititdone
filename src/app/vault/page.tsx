@@ -7,6 +7,7 @@ import styles from './Vault.module.css'
 import MagicWordsModal from '@/components/MagicWordsModal'
 import LeverageBadge from '@/components/LeverageBadge'
 import TaskDetailDrawer from '@/components/TaskDetailDrawer'
+import SyncIndicator from '@/components/SyncIndicator'
 
 // const CATEGORIES removed (using context)
 
@@ -71,8 +72,11 @@ export default function Vault() {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1>The Vault</h1>
-        <div style={{ color: 'var(--text-secondary)' }}>
-          Backlog: {tasks.length}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <SyncIndicator />
+          <span style={{ color: 'var(--text-secondary)' }}>
+            Backlog: {tasks.length}
+          </span>
         </div>
       </header>
 

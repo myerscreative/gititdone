@@ -3,12 +3,13 @@
 import React, { useState } from 'react';
 import { useTasks } from '@/context/TaskContext';
 import styles from './BrainDump.module.css';
-import { Sparkles, Brain, Check, Trash2, ArrowRight } from 'lucide-react';
+import { Sparkles, Brain, Check, Trash2 } from 'lucide-react';
 import { parseBulkTasks, GeneratedTask } from '@/app/actions/gemini';
 import LeverageBadge from '@/components/LeverageBadge';
+import SyncIndicator from '@/components/SyncIndicator';
 
 export default function BrainDump() {
-  const { categories, addTask, addCategory, loading: contextLoading, authLoading } = useTasks();
+  const { categories, addTask, addCategory, loading: contextLoading, authLoading, user } = useTasks();
   const [bulkText, setBulkText] = useState('');
   const [parsing, setParsing] = useState(false);
   const [parsedTasks, setParsedTasks] = useState<GeneratedTask[]>([]);
@@ -41,6 +42,10 @@ export default function BrainDump() {
 
   const handleCommit = async () => {
     if (committing || parsedTasks.length === 0) return;
+    if (!user) {
+      alert('Please wait for authentication to complete before committing.');
+      return;
+    }
     setCommitting(true);
     console.log("🚀 Starting Batch Commit to Vault...");
     

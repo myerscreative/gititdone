@@ -34,6 +34,7 @@ interface TaskContextType {
   loading: boolean;
   authLoading: boolean;
   isSyncing: boolean;
+  syncStatus: 'idle' | 'syncing' | 'success' | 'error';
 }
 
 
@@ -46,6 +47,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true); // Data sync loading
   const [authLoading, setAuthLoading] = useState(true); // Initial auth handshake
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
   const [dbConnected, setDbConnected] = useState(false);
 
   // Authenticate Anonymously
@@ -141,8 +143,13 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addTask = async (title: string, category: TaskCategory = 'Uncategorized', scoreVariables?: HormoziScore, magicWords?: string) => {
-    if (!user) return;
+    if (!user) {
+      console.error('❌ Cannot add task: User not authenticated');
+      setSyncStatus('error');
+      throw new Error('User not authenticated. Please wait for login.');
+    }
     setIsSyncing(true);
+    setSyncStatus('syncing');
     try {
       const defaults = { outcome: 5, certainty: 5, delay: 5, effort: 5 };
       const finalScores = scoreVariables || defaults;
@@ -160,9 +167,13 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         magicWords: magicWords || "",
         createdAt: Date.now(),
       });
+      console.log("✅ Task saved to Firestore:", title);
+      setSyncStatus('success');
+      setTimeout(() => setSyncStatus('idle'), 2000);
     } catch (e) {
       console.error("❌ Add Task Failed:", e);
-      alert("Database error: Could not add task.");
+      setSyncStatus('error');
+      throw e;
     } finally {
       setIsSyncing(false);
     }
@@ -220,19 +231,32 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addCategory = async (cat: string) => {
-    if (!user || !cat.trim()) return;
+    if (!user) {
+      console.error('❌ Cannot add category: User not authenticated');
+      setSyncStatus('error');
+      throw new Error('User not authenticated. Please wait for login.');
+    }
+    if (!cat.trim()) return;
     const normalized = cat.trim();
     
-    // Hard refresh/check against latest local state
+    // Check against latest local state
     if (!categories.some(c => c.toLowerCase() === normalized.toLowerCase())) {
       setIsSyncing(true);
+      setSyncStatus('syncing');
       try {
-        console.log("➕ Adding Category:", normalized);
+        console.log("➕ Adding Category to Firestore:", normalized);
         await addDoc(collection(db, 'categories'), { 
           name: normalized, 
           userId: user.uid,
           createdAt: Date.now() 
         });
+        console.log("✅ Category saved:", normalized);
+        setSyncStatus('success');
+        setTimeout(() => setSyncStatus('idle'), 2000);
+      } catch (e) {
+        console.error("❌ Add Category Failed:", e);
+        setSyncStatus('error');
+        throw e;
       } finally {
         setIsSyncing(false);
       }
@@ -275,7 +299,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask, toggleDaily3, toggleComplete, calculateScore, categories, addCategory, removeCategory, user, loading, authLoading, isSyncing, dbConnected }}>
+    <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask, toggleDaily3, toggleComplete, calculateScore, categories, addCategory, removeCategory, user, loading, authLoading, isSyncing, syncStatus, dbConnected }}>
       {children}
     </TaskContext.Provider>
   );
