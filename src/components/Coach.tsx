@@ -34,11 +34,6 @@ export default function Coach() {
   const [currentWisdom, setCurrentWisdom] = useState<Wisdom>(KNOWLEDGE_BASE[0]);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Initialize random
-  useEffect(() => {
-    refreshWisdom();
-  }, []);
-
   const refreshWisdom = () => {
     setIsAnimating(true);
     setTimeout(() => {
@@ -47,6 +42,11 @@ export default function Coach() {
       setIsAnimating(false);
     }, 200);
   };
+
+  // Initialize random
+  useEffect(() => {
+    refreshWisdom();
+  }, []);
 
   const getPersonaStyle = (p: Persona) => {
     switch (p) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useStore } from '@/store/useStore';
+import { useTasks } from '@/context/TaskContext';
 import { Bot, RefreshCw, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -26,14 +26,15 @@ const PERSONAS: Record<Persona, { title: string; style: string; color: string }>
 };
 
 export default function CoachSidebar() {
-  const { dailyTaskIds } = useStore();
+  const { tasks } = useTasks();
+  const dailyTasks = tasks.filter(t => t.isDaily3 && !t.completed);
   const [currentPersona, setCurrentPersona] = useState<Persona>('Alex Hormozi');
   const [advice, setAdvice] = useState<string>("Ready to work?");
 
   // Simulate "coaching" based on state changes
   useEffect(() => {
     // Determine context
-    const count = dailyTaskIds.length;
+    const count = dailyTasks.length;
     let msg = "";
 
     if (currentPersona === 'Alex Hormozi') {
@@ -49,7 +50,7 @@ export default function CoachSidebar() {
     }
     
     setAdvice(msg);
-  }, [dailyTaskIds.length, currentPersona]);
+  }, [dailyTasks.length, currentPersona]);
 
   return (
     <div className="h-full flex flex-col bg-[#0f0f0f] border-l border-white/5">

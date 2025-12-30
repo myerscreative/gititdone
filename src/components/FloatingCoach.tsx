@@ -15,7 +15,7 @@ const KNOWLEDGE_BASE: Wisdom[] = [
   { text: "Volume negates luck. Do more.", persona: 'Hormozi' },
   // Bandler
   { text: "Stop. Are you doing this because it works, or because you've always done it?", persona: 'Bandler' },
-  { text: "Confusion is the gateway to a new understand.", persona: 'Bandler' },
+  { text: "Confusion is the gateway to a new understanding.", persona: 'Bandler' },
   // Chris Do
   { text: "Don't charge for hours, charge for value.", persona: 'ChrisDo' },
 ];

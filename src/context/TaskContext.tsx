@@ -28,7 +28,7 @@ interface TaskContextType {
   calculateScore: (variables: HormoziScore) => number;
   categories: string[];
   addCategory: (cat: string) => void;
-  removeCategory: (cat: string) => void;
+  removeCategory: (cat: string, action?: 'migrate' | 'delete') => void;
   dbConnected: boolean;
   user: User | null;
   loading: boolean;

@@ -26,7 +26,7 @@ type Note = {
 };
 
 export default function TaskDetailDrawer({ task: initialTask, onClose }: Props) {
-  const { tasks, updateTask, user } = useTasks();
+  const { tasks, updateTask, user, categories } = useTasks();
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -256,8 +256,6 @@ export default function TaskDetailDrawer({ task: initialTask, onClose }: Props) 
                           month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
                         })}
                       </span>
-                      {note.content}
-
                       {note.content}
                     </div>
                   );
