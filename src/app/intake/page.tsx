@@ -12,6 +12,11 @@ export default function IntakePage() {
   const { addTask, addCategory, categories, loading: syncLoading } = useTasks();
   const router = useRouter();
 
+  const [goal, setGoal] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [plan, setPlan] = useState<GeneratedTask[]>([]);
+  const [committed, setCommitted] = useState(false);
+
   if (syncLoading) {
     return (
       <main className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
@@ -19,11 +24,6 @@ export default function IntakePage() {
       </main>
     );
   }
-  
-  const [goal, setGoal] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [plan, setPlan] = useState<GeneratedTask[]>([]);
-  const [committed, setCommitted] = useState(false);
 
   const handleAnalyze = async () => {
     if (!goal.trim()) return;
