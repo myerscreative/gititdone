@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Task, TaskCategory, HormoziScore } from '@/types/task';
 import { db, auth } from '@/lib/firebase';
-import { signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
+import { signInAnonymously, onAuthStateChanged, User, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { 
   collection, 
   addDoc, 
@@ -60,7 +60,11 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         setAuthLoading(false);
       } else {
         console.log("🔒 Attempting anonymous sign-in...");
-        signInAnonymously(auth)
+        // Enforce persistence to avoid losing data on refresh
+        setPersistence(auth, browserLocalPersistence)
+          .then(() => {
+            return signInAnonymously(auth);
+          })
           .then(() => setAuthLoading(false))
           .catch((e) => {
             console.error("Auth Failed:", e);

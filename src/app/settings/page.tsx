@@ -5,7 +5,7 @@ import { useTasks } from '@/context/TaskContext';
 import { Trash2, Plus } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { categories, addCategory, removeCategory, loading, dbConnected } = useTasks();
+  const { categories, addCategory, removeCategory, loading, dbConnected, user } = useTasks();
   const [newCat, setNewCat] = useState('');
 
   const handleDelete = async (cat: string) => {
@@ -77,6 +77,25 @@ export default function SettingsPage() {
             ? "Your data is perfectly synced with the master Firestore database." 
             : "The app is currently running in local-first mode. Changes will sync as soon as connectivity is restored."}
         </p>
+
+        {/* User Identity Section */}
+        <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
+           <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>User Identity (Guest)</h3>
+           <code style={{ 
+             display: 'block', 
+             padding: '10px', 
+             background: 'rgba(0,0,0,0.3)', 
+             borderRadius: '6px',
+             fontSize: '0.8rem',
+             color: '#fbbf24',
+             border: '1px dashed rgba(251, 191, 36, 0.3)'
+           }}>
+             {user ? user.uid : 'Not Authenticated'}
+           </code>
+           <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: '8px', fontStyle: 'italic' }}>
+             Note: You are using a specialized Guest ID. If you clear your browser cookies, this ID (and your data) may be reset.
+           </p>
+        </div>
       </section>
 
       <section className="glass-panel" style={{ padding: 'var(--spacing-lg)' }}>
