@@ -46,7 +46,10 @@ export default function Vault() {
     if (val === 'ADD_NEW') {
       // Check if Firebase is ready
       if (authLoading) {
-        alert('Please wait for authentication to complete...');
+        alert('Authentication is still loading. Please wait a moment, then try again.\n\n' +
+              'If this persists, check:\n' +
+              '1. Browser console (F12) for errors\n' +
+              '2. Anonymous authentication is enabled in Firebase Console');
         // Reset to previous category
         const currentCat = category || previousCategoryRef.current || (categories.length > 0 ? categories[0] : '');
         setCategory(currentCat);
@@ -54,7 +57,16 @@ export default function Vault() {
       }
       
       if (!user) {
-        alert('Please wait for login to complete. If this persists, try refreshing the page.');
+        const errorMsg = authLoading 
+          ? 'Authentication is still loading. Please wait a moment...'
+          : 'Authentication failed. Anonymous authentication may not be enabled in Firebase Console.\n\n' +
+            'To fix:\n' +
+            '1. Go to: https://console.firebase.google.com/project/get-it-done-901f7/authentication/providers\n' +
+            '2. Click "Sign-in method" tab\n' +
+            '3. Enable "Anonymous" authentication\n' +
+            '4. Refresh this page\n\n' +
+            'Check browser console (F12) for more details.';
+        alert(errorMsg);
         // Reset to previous category
         const currentCat = category || previousCategoryRef.current || (categories.length > 0 ? categories[0] : '');
         setCategory(currentCat);

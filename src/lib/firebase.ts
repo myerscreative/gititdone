@@ -21,9 +21,22 @@ function initializeFirebase() {
     };
   }
   
+  // Debug: Log config values (API key will be visible in client bundle - this is expected for Firebase)
+  console.log('Firebase Config Check:', {
+    hasApiKey: !!firebaseConfig.apiKey,
+    hasProjectId: !!firebaseConfig.projectId,
+    hasAuthDomain: !!firebaseConfig.authDomain,
+    projectId: firebaseConfig.projectId,
+  });
+  
   // Validate config exists before initializing
   if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-    console.warn('Firebase config is missing. Firebase features will not work.');
+    console.error('❌ Firebase config is missing. Check your environment variables.');
+    console.error('Missing values:', {
+      apiKey: !firebaseConfig.apiKey,
+      projectId: !firebaseConfig.projectId,
+      authDomain: !firebaseConfig.authDomain,
+    });
     return {
       db: null as unknown as Firestore,
       auth: null as unknown as Auth,
@@ -35,9 +48,15 @@ function initializeFirebase() {
     const db = getFirestore(app);
     const auth = getAuth(app);
     
+    console.log('✅ Firebase initialized successfully');
     return { db, auth };
-  } catch (error) {
-    console.error('Firebase initialization error:', error);
+  } catch (error: any) {
+    console.error('❌ Firebase initialization error:', error);
+    console.error('Error details:', {
+      code: error?.code,
+      message: error?.message,
+      stack: error?.stack,
+    });
     return {
       db: null as unknown as Firestore,
       auth: null as unknown as Auth,

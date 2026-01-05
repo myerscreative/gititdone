@@ -60,16 +60,35 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check if Firebase is initialized
     if (!auth) {
-      console.error("Firebase Auth is not initialized. Check your environment variables.");
+      console.error("❌ Firebase Auth is not initialized. Check your environment variables.");
+      console.error("This usually means:");
+      console.error("1. Firebase config is missing from environment variables");
+      console.error("2. Anonymous authentication is not enabled in Firebase Console");
+      console.error("3. Check browser console for Firebase initialization errors");
       setAuthLoading(false);
       setLoading(false);
       setSyncStatus('error');
       return;
     }
 
+    // Timeout to prevent infinite loading
+    const authTimeout = setTimeout(() => {
+      if (authLoading && !user) {
+        console.error("⏱️ Authentication timeout - taking too long");
+        console.error("Please check:");
+        console.error("1. Anonymous authentication is enabled in Firebase Console");
+        console.error("2. Firestore rules allow authenticated users");
+        console.error("3. Network connection is working");
+        setAuthLoading(false);
+        setLoading(false);
+        setSyncStatus('error');
+      }
+    }, 10000); // 10 second timeout
+
     const unsub = onAuthStateChanged(auth, (u) => {
       if (u) {
         console.log("✅ Authenticated as:", u.uid);
+        clearTimeout(authTimeout);
         setUser(u);
         setAuthLoading(false);
       } else {
@@ -88,20 +107,42 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
              signInAnonymously(auth)
                .then((u) => {
                   console.log("✅ Guest Sign-in Success:", u.user.uid);
+                  clearTimeout(authTimeout);
                   // setUser will be handled by onAuthStateChanged
                })
-               .catch((e) => {
+               .catch((e: any) => {
+                 clearTimeout(authTimeout);
                  console.error("❌ Auth Handshake Failed:", e);
+                 console.error("Error code:", e?.code);
+                 console.error("Error message:", e?.message);
+                 
+                 // Provide specific error messages
+                 if (e?.code === 'auth/operation-not-allowed') {
+                   console.error("🔴 CRITICAL: Anonymous authentication is NOT enabled in Firebase Console!");
+                   console.error("Go to: https://console.firebase.google.com/project/get-it-done-901f7/authentication/providers");
+                   console.error("Enable 'Anonymous' sign-in method");
+                   alert("Anonymous authentication is not enabled. Please enable it in Firebase Console under Authentication → Sign-in method → Anonymous");
+                 } else if (e?.code === 'auth/network-request-failed') {
+                   console.error("🔴 Network error - check your internet connection");
+                   alert("Network error. Please check your internet connection and try again.");
+                 } else {
+                   console.error("🔴 Unknown authentication error");
+                   alert(`Authentication failed: ${e?.message || 'Unknown error'}. Check browser console for details.`);
+                 }
+                 
                  setSyncStatus('error');
                  setAuthLoading(false);
                  setLoading(false);
-                 alert("Authentication failed. Please check your connection or refresh.");
                });
           });
       }
     });
-    return () => unsub();
-  }, []);
+    
+    return () => {
+      clearTimeout(authTimeout);
+      unsub();
+    };
+  }, [auth, authLoading, user]);
 
 
   // Load Categories (Scoped to User)
