@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useTasks } from '@/context/TaskContext'
 import { TaskCategory, HormoziScore, Task } from '@/types/task'
 import styles from './Vault.module.css'
@@ -25,20 +25,42 @@ export default function Vault() {
   const [category, setCategory] = useState<TaskCategory>(''); // Initialize empty or first cat
   const [isReusable, setIsReusable] = useState(false);
   const [isAfterHours, setIsAfterHours] = useState(false);
+  const previousCategoryRef = useRef<TaskCategory>('');
   
   // Effect to set default category
   React.useEffect(() => {
      if (categories.length > 0 && (!category || category === '')) {
        setCategory(categories[0]);
+       previousCategoryRef.current = categories[0];
      }
   }, [categories]);
 
+  // Update ref when category changes (but not when it's ADD_NEW)
+  React.useEffect(() => {
+    if (category && category !== 'ADD_NEW') {
+      previousCategoryRef.current = category;
+    }
+  }, [category]);
+
   const handleCategoryChange = async (val: string) => {
     if (val === 'ADD_NEW') {
+      // Store current category before prompt
+      const currentCat = category || previousCategoryRef.current || (categories.length > 0 ? categories[0] : '');
       const name = prompt("Enter new category name:");
       if (name && name.trim()) {
-        await addCategory(name.trim());
-        setCategory(name.trim());
+        try {
+          await addCategory(name.trim());
+          // Set the new category - it should appear in the list after Firestore syncs
+          setCategory(name.trim());
+        } catch (error: any) {
+          console.error('Failed to add category:', error);
+          alert(`Failed to add category: ${error?.message || 'Unknown error'}`);
+          // Reset to previous category
+          setCategory(currentCat);
+        }
+      } else {
+        // User cancelled or entered empty string - reset to previous category
+        setCategory(currentCat);
       }
     } else {
       setCategory(val);
@@ -151,8 +173,9 @@ export default function Vault() {
               </label>
               <select 
                 className={styles.select}
-                value={category}
+                value={category && categories.includes(category) ? category : ''}
                 onChange={e => handleCategoryChange(e.target.value)}
+                key={categories.length} // Force re-render when categories change
               >
                 <option value="" disabled>Select Strategy...</option>
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}

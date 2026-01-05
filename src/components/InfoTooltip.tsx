@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Eye, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Info, X } from 'lucide-react';
 
 interface InfoTooltipProps {
   title: string;
@@ -10,6 +10,20 @@ interface InfoTooltipProps {
 
 export default function InfoTooltip({ title, content }: InfoTooltipProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isOpen]);
 
   return (
     <>
@@ -42,7 +56,7 @@ export default function InfoTooltip({ title, content }: InfoTooltipProps) {
         }}
         title={`Learn about ${title}`}
       >
-        <Eye size={14} />
+        <Info size={14} />
       </button>
 
       {isOpen && (
@@ -59,7 +73,10 @@ export default function InfoTooltip({ title, content }: InfoTooltipProps) {
               zIndex: 9998,
               backdropFilter: 'blur(4px)',
             }}
-            onClick={() => setIsOpen(false)}
+            onClick={(e) => {
+              e.preventDefault();
+              setIsOpen(false);
+            }}
           />
           
           {/* Modal */}
@@ -83,15 +100,21 @@ export default function InfoTooltip({ title, content }: InfoTooltipProps) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--spacing-lg)' }}>
               <h3 style={{ 
                 fontSize: '1.25rem', 
-                fontWeight: 900, 
+                fontWeight: 600, 
                 color: 'var(--primary)',
                 margin: 0,
-                letterSpacing: '-0.01em'
+                letterSpacing: 'normal',
+                textTransform: 'none',
+                fontFamily: 'inherit'
               }}>
                 {title}
               </h3>
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsOpen(false);
+                }}
                 style={{
                   background: 'transparent',
                   border: 'none',
@@ -105,14 +128,19 @@ export default function InfoTooltip({ title, content }: InfoTooltipProps) {
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
                 onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
+                type="button"
               >
                 <X size={20} />
               </button>
             </div>
             <div style={{ 
               color: 'var(--text-secondary)', 
-              lineHeight: '1.6',
-              fontSize: '0.95rem'
+              lineHeight: '1.7',
+              fontSize: '1rem',
+              fontWeight: 400,
+              textTransform: 'none',
+              letterSpacing: 'normal',
+              fontFamily: 'inherit'
             }}>
               {content}
             </div>
