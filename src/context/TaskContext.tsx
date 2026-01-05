@@ -58,6 +58,15 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
   // Authenticate Anonymously
   useEffect(() => {
+    // Check if Firebase is initialized
+    if (!auth) {
+      console.error("Firebase Auth is not initialized. Check your environment variables.");
+      setAuthLoading(false);
+      setLoading(false);
+      setSyncStatus('error');
+      return;
+    }
+
     const unsub = onAuthStateChanged(auth, (u) => {
       if (u) {
         console.log("✅ Authenticated as:", u.uid);
@@ -97,7 +106,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
   // Load Categories (Scoped to User)
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) return;
     const q = query(
       collection(db, 'categories'), 
       where('userId', '==', user.uid)
@@ -120,8 +129,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
   // Load Tasks (Scoped to User)
   useEffect(() => {
-    if (!user) {
-      // If no user, we aren't loading data.
+    if (!user || !db) {
+      // If no user or Firebase not initialized, we aren't loading data.
       setLoading(false);
       return;
     }
@@ -210,7 +219,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
   // Seed Default Categories (Scoped to User)
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) return;
     const seedCategories = async () => {
        const q = query(collection(db, 'categories'), where('userId', '==', user.uid));
        const querySnapshot = await getDocs(q);
@@ -265,10 +274,10 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addTask = async (title: string, category: TaskCategory = 'Uncategorized', scoreVariables?: HormoziScore, magicWords?: string, isReusable?: boolean, isAfterHours?: boolean) => {
-    if (!user) {
-      console.error('❌ Cannot add task: User not authenticated');
+    if (!user || !db) {
+      console.error('❌ Cannot add task: User not authenticated or Firebase not initialized');
       setSyncStatus('error');
-      throw new Error('User not authenticated. Please wait for login.');
+      throw new Error('User not authenticated or Firebase not initialized. Please wait for login.');
     }
     setIsSyncing(true);
     setSyncStatus('syncing');
@@ -304,7 +313,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
-    if (!user) return;
+    if (!user || !db) return;
     setIsSyncing(true);
     try {
       const docRef = doc(db, 'tasks', id);
@@ -321,7 +330,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteTask = async (id: string) => {
-    if (!user) return;
+    if (!user || !db) return;
     setIsSyncing(true);
     try {
       await deleteDoc(doc(db, 'tasks', id));
@@ -331,7 +340,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleDaily3 = async (id: string) => {
-    if (!user) return;
+    if (!user || !db) return;
     const task = tasks.find(t => t.id === id);
     if (!task) return;
     setIsSyncing(true);
@@ -343,7 +352,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleComplete = async (id: string) => {
-    if (!user) return;
+    if (!user || !db) return;
     const task = tasks.find(t => t.id === id);
     if (!task) return;
     setIsSyncing(true);
@@ -385,7 +394,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const reorderDaily3 = async (orderedIds: string[]) => {
-    if (!user) return;
+    if (!user || !db) return;
     setIsSyncing(true);
     setSyncStatus('syncing');
     try {
@@ -405,6 +414,10 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginWithGoogle = async () => {
+    if (!auth) {
+      console.error('Firebase Auth is not initialized');
+      return;
+    }
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
@@ -423,6 +436,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
       setCategories([]); 
@@ -434,7 +448,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
   // --- Data Rescue ---
   const scanForOrphans = async (): Promise<number> => {
-    if (!user) return 0;
+    if (!user || !db) return 0;
     try {
       // Attempt to read ALL tasks. This will FAIL if rules are strict.
       const snap = await getDocs(collection(db, 'tasks'));
@@ -451,7 +465,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const claimOrphans = async () => {
-    if (!user) return;
+    if (!user || !db) return;
     setIsSyncing(true);
     try {
       const snap = await getDocs(collection(db, 'tasks'));
@@ -478,10 +492,10 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
 
   const addCategory = async (cat: string) => {
-    if (!user) {
-      console.error('❌ Cannot add category: User not authenticated');
+    if (!user || !db) {
+      console.error('❌ Cannot add category: User not authenticated or Firebase not initialized');
       setSyncStatus('error');
-      throw new Error('User not authenticated. Please wait for login.');
+      throw new Error('User not authenticated or Firebase not initialized. Please wait for login.');
     }
     if (!cat.trim()) return;
     const normalized = cat.trim();
@@ -511,7 +525,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeCategory = async (cat: string, action: 'migrate' | 'delete' = 'migrate') => {
-     if (!user) return;
+     if (!user || !db) return;
      setIsSyncing(true);
      setSyncStatus('syncing');
      try {
