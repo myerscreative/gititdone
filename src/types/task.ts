@@ -19,6 +19,7 @@ export interface Task {
   isDaily3: boolean; // Is it currently in the Daily 3 list?
   daily3Order?: number; // Order position in Daily 3 (0, 1, 2)
   completed: boolean;
+  completedAt?: number; // Timestamp when task was completed
   notes?: string;
   scoreVariables: HormoziScore;
   calculatedScore: number;

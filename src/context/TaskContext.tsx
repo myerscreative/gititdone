@@ -31,6 +31,7 @@ interface TaskContextType {
   scanForOrphans: () => Promise<number>;
   claimOrphans: () => Promise<void>;
   calculateScore: (variables: HormoziScore) => number;
+  getStreak: () => number;
   categories: string[];
   addCategory: (cat: string) => Promise<void>;
   removeCategory: (cat: string, action?: 'migrate' | 'delete') => Promise<void>;
@@ -141,7 +142,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       where('userId', '==', user.uid)
     );
     
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
       const liveTasks: Task[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -152,6 +153,49 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       // If fromCache is false, we are fully connected.
       setDbConnected(!snapshot.metadata.fromCache);
       clearTimeout(safetyTimer);
+      
+      // Daily Reset: Check if we need to reset completed Daily 3 tasks from previous days
+      const today = new Date().toDateString();
+      const lastResetKey = `dailyReset_${user.uid}`;
+      const lastResetDate = localStorage.getItem(lastResetKey);
+      
+      if (lastResetDate !== today) {
+        // New day - reset any completed Daily 3 tasks that weren't completed today
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayStartTime = todayStart.getTime();
+        
+        const completedDaily3 = liveTasks.filter(t => {
+          // Find tasks that are still marked as Daily 3 but completed
+          // and were completed before today (edge case cleanup)
+          if (!t.isDaily3 || !t.completed) return false;
+          if (!t.completedAt) return true; // No timestamp, reset it
+          return t.completedAt < todayStartTime; // Completed before today
+        });
+        
+        if (completedDaily3.length > 0) {
+          console.log(`🌅 New day detected. Resetting ${completedDaily3.length} stale Daily 3 tasks.`);
+          const batch = writeBatch(db);
+          completedDaily3.forEach(task => {
+            const taskRef = doc(db, 'tasks', task.id);
+            batch.update(taskRef, { 
+              isDaily3: false, 
+              daily3Order: null,
+              completed: false,
+              completedAt: null
+            });
+          });
+          try {
+            await batch.commit();
+            localStorage.setItem(lastResetKey, today);
+            console.log("✅ Daily reset complete.");
+          } catch (e) {
+            console.error("❌ Daily reset failed:", e);
+          }
+        } else {
+          localStorage.setItem(lastResetKey, today);
+        }
+      }
     }, (error) => {
       console.error("❌ Task Listener Error:", error);
       setLoading(false);
@@ -186,6 +230,38 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     const numerator = v.outcome * v.certainty;
     const denominator = (v.delay * v.effort) || 1; 
     return parseFloat((numerator / denominator).toFixed(2));
+  };
+
+  const getStreak = (): number => {
+    if (!user) return 0;
+    
+    // Get all completed tasks with completion dates
+    const completedTasks = tasks.filter(t => t.completed && t.completedAt);
+    if (completedTasks.length === 0) return 0;
+    
+    // Group by date
+    const completionDates = new Set<string>();
+    completedTasks.forEach(t => {
+      if (t.completedAt) {
+        completionDates.add(new Date(t.completedAt).toDateString());
+      }
+    });
+    
+    // Check if today is completed
+    const today = new Date().toDateString();
+    const todayCompleted = completionDates.has(today);
+    
+    // Calculate streak backwards from today
+    let streak = todayCompleted ? 1 : 0;
+    let checkDate = new Date();
+    checkDate.setDate(checkDate.getDate() - 1); // Start from yesterday
+    
+    while (completionDates.has(checkDate.toDateString())) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+    
+    return streak;
   };
 
   const addTask = async (title: string, category: TaskCategory = 'Uncategorized', scoreVariables?: HormoziScore, magicWords?: string) => {
@@ -271,14 +347,28 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     setIsSyncing(true);
     try {
       const newStatus = !task.completed;
-      await updateDoc(doc(db, 'tasks', id), { completed: newStatus });
+      const updates: any = { 
+        completed: newStatus,
+        completedAt: newStatus ? Date.now() : null
+      };
+      
+      // If completing a Daily 3 task, remove it from Daily 3
+      if (newStatus === true && task.isDaily3) {
+        updates.isDaily3 = false;
+        updates.daily3Order = null;
+      }
+      
+      await updateDoc(doc(db, 'tasks', id), updates);
       
       // Auto-Reset for Recurring Tasks
       if (newStatus === true && task.isRecurring) {
         console.log("🔄 Recurring Task Completed: triggering auto-reset.");
         setTimeout(async () => {
           try {
-            await updateDoc(doc(db, 'tasks', id), { completed: false });
+            await updateDoc(doc(db, 'tasks', id), { 
+              completed: false,
+              completedAt: null
+            });
             // Ideally assume toast is handled by UI observing the change, or we could emit an event
             console.log("🔄 Task reset for tomorrow.");
           } catch(e) {
@@ -468,7 +558,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask, toggleDaily3, toggleComplete, reorderDaily3, calculateScore, categories, addCategory, removeCategory, user, loading, authLoading, isSyncing, syncStatus, dbConnected, loginWithGoogle, logout, scanForOrphans, claimOrphans }}>
+    <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask, toggleDaily3, toggleComplete, reorderDaily3, calculateScore, getStreak, categories, addCategory, removeCategory, user, loading, authLoading, isSyncing, syncStatus, dbConnected, loginWithGoogle, logout, scanForOrphans, claimOrphans }}>
       {children}
     </TaskContext.Provider>
   );
