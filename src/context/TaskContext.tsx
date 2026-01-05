@@ -115,19 +115,35 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
                  console.error("❌ Auth Handshake Failed:", e);
                  console.error("Error code:", e?.code);
                  console.error("Error message:", e?.message);
+                 console.error("Full error object:", e);
+                 
+                 // Check Firebase config
+                 console.log("🔍 Debugging info:");
+                 console.log("- Auth object exists:", !!auth);
+                 console.log("- Auth app name:", auth?.app?.name);
+                 console.log("- Current user:", auth?.currentUser);
                  
                  // Provide specific error messages
                  if (e?.code === 'auth/operation-not-allowed') {
                    console.error("🔴 CRITICAL: Anonymous authentication is NOT enabled in Firebase Console!");
-                   console.error("Go to: https://console.firebase.google.com/project/get-it-done-901f7/authentication/providers");
-                   console.error("Enable 'Anonymous' sign-in method");
-                   alert("Anonymous authentication is not enabled. Please enable it in Firebase Console under Authentication → Sign-in method → Anonymous");
+                   console.error("Even if it shows enabled, try:");
+                   console.error("1. Disable it, save, then enable it again");
+                   console.error("2. Wait 30 seconds");
+                   console.error("3. Refresh the app");
+                   alert("Anonymous authentication may not be fully enabled. Try disabling and re-enabling it in Firebase Console, wait 30 seconds, then refresh.");
                  } else if (e?.code === 'auth/network-request-failed') {
                    console.error("🔴 Network error - check your internet connection");
                    alert("Network error. Please check your internet connection and try again.");
+                 } else if (e?.code === 'auth/invalid-api-key') {
+                   console.error("🔴 Invalid API key - check environment variables");
+                   alert("Firebase API key is invalid. Check that environment variables are set correctly and rebuild the app.");
                  } else {
                    console.error("🔴 Unknown authentication error");
-                   alert(`Authentication failed: ${e?.message || 'Unknown error'}. Check browser console for details.`);
+                   console.error("This might be a timing issue. Try:");
+                   console.error("1. Hard refresh the page (Ctrl+Shift+R or Cmd+Shift+R)");
+                   console.error("2. Clear browser cache");
+                   console.error("3. Check if Firebase initialized properly");
+                   alert(`Authentication failed: ${e?.message || 'Unknown error'}.\n\nCheck browser console (F12) for details.\n\nTry: Hard refresh (Ctrl+Shift+R) or clear cache.`);
                  }
                  
                  setSyncStatus('error');
