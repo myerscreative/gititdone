@@ -165,14 +165,44 @@ export default function TaskDetailDrawer({ task: initialTask, onClose }: Props) 
             <div className={styles.meta} style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <span>Currently Ranked: <span style={{ color: '#fff', fontWeight: 700 }}>{task.calculatedScore}</span></span>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#fbbf24', cursor: 'pointer' }}>
-                    <input 
-                      type="checkbox" 
-                      checked={task.isRecurring || false} 
-                      onChange={(e) => updateTask(task.id, { isRecurring: e.target.checked })}
-                    />
-                    Recurring Task (Auto-Reset)
-                  </label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#fbbf24', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={task.isRecurring || false} 
+                        onChange={(e) => updateTask(task.id, { isRecurring: e.target.checked })}
+                      />
+                      Recurring Task (Auto-Reset)
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#60a5fa', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={task.isReusable || false} 
+                        onChange={(e) => {
+                          updateTask(task.id, { isReusable: e.target.checked });
+                          // Can't be both reusable and After Hours
+                          if (e.target.checked && task.isAfterHours) {
+                            updateTask(task.id, { isAfterHours: false });
+                          }
+                        }}
+                      />
+                      Reusable Item (Stays in Vault)
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#a5b4fc', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={task.isAfterHours || false} 
+                        onChange={(e) => {
+                          updateTask(task.id, { isAfterHours: e.target.checked });
+                          // Can't be both reusable and After Hours
+                          if (e.target.checked && task.isReusable) {
+                            updateTask(task.id, { isReusable: false });
+                          }
+                        }}
+                      />
+                      🌙 After Hours (Shows after Daily 3 complete)
+                    </label>
+                  </div>
                </div>
                
                {/* Tools */}

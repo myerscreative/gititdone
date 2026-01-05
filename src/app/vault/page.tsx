@@ -22,6 +22,8 @@ export default function Vault() {
   // New Task State
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<TaskCategory>(''); // Initialize empty or first cat
+  const [isReusable, setIsReusable] = useState(false);
+  const [isAfterHours, setIsAfterHours] = useState(false);
   
   // Effect to set default category
   React.useEffect(() => {
@@ -44,6 +46,9 @@ export default function Vault() {
     outcome: 5, certainty: 5, delay: 5, effort: 5
   });
 
+  // Filter state
+  const [filterType, setFilterType] = useState<'all' | 'reusable' | 'one-time' | 'after-hours'>('all');
+
   if (loading) {
      return (
        <div className={styles.container} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
@@ -56,17 +61,34 @@ export default function Vault() {
     e.preventDefault();
     if (!title.trim() || !category) return;
     
-    // ... logic continues
-    addTask(title, category, scoreVars);
+    addTask(title, category, scoreVars, undefined, isReusable, isAfterHours);
     setTitle('');
+    setIsReusable(false);
+    setIsAfterHours(false);
     setScoreVars({ outcome: 5, certainty: 5, delay: 5, effort: 5 }); // reset scores
   };
 
-  // Sort tasks by Hormozi Score (Strictly high leverage first)
-  // Show all incomplete tasks
-  const sortedTasks = [...tasks]
-    .filter(t => !t.completed)
+  // Filter and sort tasks
+  const filteredTasks = tasks.filter(t => {
+    if (t.completed) return false;
+    if (filterType === 'reusable') return t.isReusable === true && !t.isAfterHours;
+    if (filterType === 'one-time') return !t.isReusable && !t.isAfterHours;
+    return !t.isAfterHours; // 'all' excludes After Hours (they have their own section)
+  });
+
+  // Separate into reusable and one-time
+  const reusableTasks = filteredTasks.filter(t => t.isReusable).sort((a, b) => b.calculatedScore - a.calculatedScore);
+  const oneTimeTasks = filteredTasks.filter(t => !t.isReusable).sort((a, b) => b.calculatedScore - a.calculatedScore);
+  
+  // After Hours tasks (separate section)
+  const afterHoursTasks = tasks
+    .filter(t => !t.completed && t.isAfterHours)
     .sort((a, b) => b.calculatedScore - a.calculatedScore);
+  
+  // For 'all' view, combine but show reusable first
+  const sortedTasks = filterType === 'all' 
+    ? [...reusableTasks, ...oneTimeTasks]
+    : filteredTasks.sort((a, b) => b.calculatedScore - a.calculatedScore);
 
   return (
     <div className={styles.container}>
@@ -139,6 +161,35 @@ export default function Vault() {
               <input type="number" className={styles.input} value={scoreVars.effort} onChange={e => setScoreVars({...scoreVars, effort: parseFloat(e.target.value) || 1})} />
             </div>
           </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: 'var(--spacing-md)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}>
+              <input
+                type="checkbox"
+                checked={isReusable}
+                onChange={(e) => setIsReusable(e.target.checked)}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                Reusable item (will stay in Vault after use)
+              </span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}>
+              <input
+                type="checkbox"
+                checked={isAfterHours}
+                onChange={(e) => {
+                  setIsAfterHours(e.target.checked);
+                  // Can't be both reusable and After Hours
+                  if (e.target.checked) setIsReusable(false);
+                }}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              <span style={{ fontSize: '0.85rem', color: '#a5b4fc' }}>
+                🌙 After Hours (shows only after Daily 3 complete)
+              </span>
+            </label>
+          </div>
         </form>
       </section>
 
@@ -150,9 +201,37 @@ export default function Vault() {
       />
 
       {/* Task List */}
-      <h2 className={styles.sectionTitle}>High-Leverage Backlog</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
+        <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>High-Leverage Backlog</h2>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setFilterType('all')}
+            className={filterType === 'all' ? styles.filterBtnActive : styles.filterBtn}
+          >
+            All ({tasks.filter(t => !t.completed && !t.isAfterHours).length})
+          </button>
+          <button
+            onClick={() => setFilterType('reusable')}
+            className={filterType === 'reusable' ? styles.filterBtnActive : styles.filterBtn}
+          >
+            Reusable ({reusableTasks.length})
+          </button>
+          <button
+            onClick={() => setFilterType('one-time')}
+            className={filterType === 'one-time' ? styles.filterBtnActive : styles.filterBtn}
+          >
+            One-Time ({oneTimeTasks.length})
+          </button>
+          <button
+            onClick={() => setFilterType('after-hours')}
+            className={filterType === 'after-hours' ? styles.filterBtnActiveAfterHours : styles.filterBtnAfterHours}
+          >
+            🌙 After Hours ({afterHoursTasks.length})
+          </button>
+        </div>
+      </div>
       <div className={styles.taskList}>
-        {sortedTasks.map(task => (
+        {(filterType === 'after-hours' ? afterHoursTasks : sortedTasks).map(task => (
           <div 
             key={task.id} 
             className={styles.taskCard} 
@@ -160,7 +239,14 @@ export default function Vault() {
             style={{ cursor: 'pointer' }}
           >
             <div style={{ flex: 1 }}>
-              <div className={styles.taskTitle}>{task.title}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <div className={styles.taskTitle}>{task.title}</div>
+                {task.isReusable && (
+                  <span className={styles.reusableBadge} title="Reusable item">
+                    🔄 Reusable
+                  </span>
+                )}
+              </div>
               <div className={styles.taskMeta}>
                 <span className={styles.categoryTag}>{task.category}</span>
                 <span style={{ opacity: 0.2 }}>|</span>
@@ -179,13 +265,18 @@ export default function Vault() {
                 >
                   🔮
                 </button>
-                {!task.isDaily3 && !task.completed && (
+                {!task.isDaily3 && !task.completed && !task.isAfterHours && (
                    <button 
                      onClick={(e) => { e.stopPropagation(); toggleDaily3(task.id); }}
                      className={styles.promoteBtn}
                    >
                      Promote to Daily 3
                    </button>
+                )}
+                {task.isAfterHours && (
+                  <span style={{ color: '#a5b4fc', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                    🌙 After Hours
+                  </span>
                 )}
                 {task.isDaily3 && (
                     <span style={{ color: 'var(--accent)', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Active in Daily 3</span>
@@ -200,9 +291,11 @@ export default function Vault() {
             </div>
           </div>
         ))}
-        {sortedTasks.length === 0 && (
+        {(filterType === 'after-hours' ? afterHoursTasks : sortedTasks).length === 0 && (
           <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-            The Vault is empty. Add high-leverage tasks above.
+            {filterType === 'after-hours' 
+              ? 'No After Hours tasks yet. Add some optional tasks that will appear after you complete your Daily 3.'
+              : 'The Vault is empty. Add high-leverage tasks above.'}
           </div>
         )}
       </div>

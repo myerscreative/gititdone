@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Archive, Settings, BrainCircuit, Sparkles, CloudCheck, CloudUpload } from 'lucide-react'
 import styles from './Sidebar.module.css'
@@ -22,7 +23,14 @@ export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.brand}>
-        DAILY <span style={{ color: 'var(--primary)' }}>3</span>
+        <Image 
+          src="/daily3_logo.svg" 
+          alt="Daily 3" 
+          width={63} 
+          height={21}
+          priority
+          style={{ height: 'auto', width: 'auto', maxWidth: '63px' }}
+        />
       </div>
       
       <nav className={styles.nav}>

@@ -26,5 +26,7 @@ export interface Task {
   peopleInvolved?: string[]; // For Scripting Assistant
   magicWords?: string; // Phil M. Jones Execution Script
   isRecurring?: boolean; // If true, auto-unchecks after completion
+  isReusable?: boolean; // If true, this is a reusable item in the Vault (vs one-time)
+  isAfterHours?: boolean; // If true, this is an "After Hours" task (shows only after Daily 3 complete)
   createdAt: number;
 }

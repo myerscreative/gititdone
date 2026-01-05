@@ -86,12 +86,18 @@ export default function Home() {
   const completedToday = completedTodayTasks.length;
   const streak = getStreak();
   const emptySlots = Math.max(0, 3 - orderedDaily3.length);
+  const allDaily3Complete = orderedDaily3.length === 0 && completedToday >= 3;
   
   // Get top tasks from vault for suggestions
   const topVaultTasks = tasks
-    .filter(t => !t.isDaily3 && !t.completed)
+    .filter(t => !t.isDaily3 && !t.completed && !t.isAfterHours)
     .sort((a, b) => b.calculatedScore - a.calculatedScore)
     .slice(0, 3);
+
+  // Get After Hours tasks (only show when all 3 are complete)
+  const afterHoursTasks = tasks
+    .filter(t => t.isAfterHours && !t.completed)
+    .sort((a, b) => b.calculatedScore - a.calculatedScore);
 
   return (
     <main className="container">
@@ -282,6 +288,60 @@ export default function Home() {
                 </motion.div>
               )}
             </div>
+          )}
+
+          {/* After Hours Section - Only shows when all 3 are complete */}
+          {allDaily3Complete && afterHoursTasks.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              style={{ marginTop: 'var(--spacing-2xl)', paddingTop: 'var(--spacing-xl)', borderTop: '2px solid rgba(255, 255, 255, 0.1)' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: 'var(--spacing-lg)' }}>
+                <span style={{ fontSize: '1.5rem' }}>🌙</span>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white', margin: 0 }}>
+                  After Hours
+                </h2>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                  Optional
+                </span>
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 'var(--spacing-lg)', fontStyle: 'italic' }}>
+                Nice work on completing your Daily 3! Here are some optional tasks if you want to keep going.
+              </p>
+              <div className={styles.afterHoursList}>
+                {afterHoursTasks.map(task => (
+                  <motion.div
+                    key={task.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className={styles.afterHoursCard}
+                    onClick={() => setSelectedTask(task)}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <div className={styles.afterHoursTitle}>{task.title}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+                        <span className={styles.categoryTag}>{task.category}</span>
+                        {task.calculatedScore > 0 && (
+                          <span className={styles.leverageBadge} style={{ fontSize: '0.7rem' }}>
+                            {task.calculatedScore.toFixed(1)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleComplete(task.id); }}
+                        className={styles.afterHoursCompleteBtn}
+                      >
+                        Done
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
           )}
        </div>
 

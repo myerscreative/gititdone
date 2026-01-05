@@ -20,7 +20,7 @@ import {
 
 interface TaskContextType {
   tasks: Task[];
-  addTask: (title: string, category?: TaskCategory, scoreVariables?: HormoziScore, magicWords?: string) => Promise<void>;
+  addTask: (title: string, category?: TaskCategory, scoreVariables?: HormoziScore, magicWords?: string, isReusable?: boolean, isAfterHours?: boolean) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   toggleDaily3: (id: string) => Promise<void>;
@@ -264,7 +264,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     return streak;
   };
 
-  const addTask = async (title: string, category: TaskCategory = 'Uncategorized', scoreVariables?: HormoziScore, magicWords?: string) => {
+  const addTask = async (title: string, category: TaskCategory = 'Uncategorized', scoreVariables?: HormoziScore, magicWords?: string, isReusable?: boolean, isAfterHours?: boolean) => {
     if (!user) {
       console.error('❌ Cannot add task: User not authenticated');
       setSyncStatus('error');
@@ -287,6 +287,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         scoreVariables: finalScores,
         calculatedScore,
         magicWords: magicWords || "",
+        isReusable: isReusable ?? false,
+        isAfterHours: isAfterHours ?? false,
         createdAt: Date.now(),
       });
       console.log("✅ Task saved to Firestore:", title);
