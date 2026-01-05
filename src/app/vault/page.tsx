@@ -13,7 +13,7 @@ import InfoTooltip from '@/components/InfoTooltip'
 // const CATEGORIES removed (using context)
 
 export default function Vault() {
-  const { tasks, addTask, deleteTask, calculateScore, toggleDaily3, categories, addCategory, loading } = useTasks();
+  const { tasks, addTask, deleteTask, calculateScore, toggleDaily3, categories, addCategory, loading, user, authLoading } = useTasks();
 
   // State for Magic Modal
   const [isMagicOpen, setIsMagicOpen] = useState(false);
@@ -44,6 +44,23 @@ export default function Vault() {
 
   const handleCategoryChange = async (val: string) => {
     if (val === 'ADD_NEW') {
+      // Check if Firebase is ready
+      if (authLoading) {
+        alert('Please wait for authentication to complete...');
+        // Reset to previous category
+        const currentCat = category || previousCategoryRef.current || (categories.length > 0 ? categories[0] : '');
+        setCategory(currentCat);
+        return;
+      }
+      
+      if (!user) {
+        alert('Please wait for login to complete. If this persists, try refreshing the page.');
+        // Reset to previous category
+        const currentCat = category || previousCategoryRef.current || (categories.length > 0 ? categories[0] : '');
+        setCategory(currentCat);
+        return;
+      }
+      
       // Store current category before prompt
       const currentCat = category || previousCategoryRef.current || (categories.length > 0 ? categories[0] : '');
       const name = prompt("Enter new category name:");
@@ -54,7 +71,12 @@ export default function Vault() {
           setCategory(name.trim());
         } catch (error: any) {
           console.error('Failed to add category:', error);
-          alert(`Failed to add category: ${error?.message || 'Unknown error'}`);
+          const errorMsg = error?.message || 'Unknown error';
+          if (errorMsg.includes('not authenticated') || errorMsg.includes('not initialized')) {
+            alert('Firebase is not ready yet. Please wait a moment and try again, or refresh the page.');
+          } else {
+            alert(`Failed to add category: ${errorMsg}`);
+          }
           // Reset to previous category
           setCategory(currentCat);
         }
