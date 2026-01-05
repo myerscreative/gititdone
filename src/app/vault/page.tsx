@@ -8,6 +8,7 @@ import MagicWordsModal from '@/components/MagicWordsModal'
 import LeverageBadge from '@/components/LeverageBadge'
 import TaskDetailDrawer from '@/components/TaskDetailDrawer'
 import SyncIndicator from '@/components/SyncIndicator'
+import InfoTooltip from '@/components/InfoTooltip'
 
 // const CATEGORIES removed (using context)
 
@@ -27,8 +28,10 @@ export default function Vault() {
   
   // Effect to set default category
   React.useEffect(() => {
-     if (categories.length > 0 && !category) setCategory(categories[0]);
-  }, [categories, category]);
+     if (categories.length > 0 && (!category || category === '')) {
+       setCategory(categories[0]);
+     }
+  }, [categories]);
 
   const handleCategoryChange = async (val: string) => {
     if (val === 'ADD_NEW') {
@@ -57,15 +60,36 @@ export default function Vault() {
      );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !category) return;
+    console.log('Form submitted:', { title, category, scoreVars });
     
-    addTask(title, category, scoreVars, undefined, isReusable, isAfterHours);
-    setTitle('');
-    setIsReusable(false);
-    setIsAfterHours(false);
-    setScoreVars({ outcome: 5, certainty: 5, delay: 5, effort: 5 }); // reset scores
+    if (!title.trim()) {
+      console.warn('Cannot submit: title is empty');
+      alert('Please enter an opportunity title.');
+      return;
+    }
+    
+    if (!category || category.trim() === '') {
+      console.warn('Cannot submit: category is empty');
+      alert('Please select a strategy category.');
+      return;
+    }
+    
+    try {
+      console.log('Calling addTask with:', { title, category, scoreVars, isReusable, isAfterHours });
+      await addTask(title.trim(), category, scoreVars, undefined, isReusable, isAfterHours);
+      console.log('Task added successfully');
+      // Only reset if successful
+      setTitle('');
+      setIsReusable(false);
+      setIsAfterHours(false);
+      setScoreVars({ outcome: 5, certainty: 5, delay: 5, effort: 5 }); // reset scores
+    } catch (error: any) {
+      console.error('Failed to add task:', error);
+      const errorMessage = error?.message || 'Unknown error occurred';
+      alert(`Failed to add task: ${errorMessage}`);
+    }
   };
 
   // Filter and sort tasks
@@ -118,7 +142,13 @@ export default function Vault() {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-lg)' }}>
             <div className={styles.inputGroup}>
-              <label className={styles.label}>Strategy Category</label>
+              <label className={styles.label} style={{ display: 'flex', alignItems: 'center' }}>
+                Strategy Category
+                <InfoTooltip 
+                  title="Strategy Category"
+                  content="Organize your tasks by strategic area or business function. Categories help you see where you're focusing your energy and identify gaps. Examples: Income Generation, Product Development, Marketing, Operations. Create categories that match your business priorities."
+                />
+              </label>
               <select 
                 className={styles.select}
                 value={category}
@@ -145,19 +175,43 @@ export default function Vault() {
 
           <div className={styles.scoreGrid}>
             <div>
-              <label className={styles.label}>Outcome (0-10)</label>
+              <label className={styles.label} style={{ display: 'flex', alignItems: 'center' }}>
+                Outcome (0-10)
+                <InfoTooltip 
+                  title="Outcome"
+                  content="Rate the potential impact or result this task will create on a scale of 0-10. Higher scores mean bigger outcomes. Ask yourself: 'If I complete this perfectly, how much will it move the needle?' Examples: A task that generates $10K/month = 9-10, a task that saves 1 hour/week = 3-4."
+                />
+              </label>
               <input type="number" className={styles.input} value={scoreVars.outcome} onChange={e => setScoreVars({...scoreVars, outcome: parseFloat(e.target.value) || 0})} />
             </div>
              <div>
-              <label className={styles.label}>Certainty (0-10)</label>
+              <label className={styles.label} style={{ display: 'flex', alignItems: 'center' }}>
+                Certainty (0-10)
+                <InfoTooltip 
+                  title="Certainty"
+                  content="How confident are you that this approach will actually work? Rate from 0-10. Higher scores mean you're more certain it will succeed. Consider: Have you done this before? Do you have a proven system? Is it experimental? A proven system you've used = 8-10, a new untested idea = 3-5."
+                />
+              </label>
               <input type="number" className={styles.input} value={scoreVars.certainty} onChange={e => setScoreVars({...scoreVars, certainty: parseFloat(e.target.value) || 0})} />
             </div>
              <div>
-              <label className={styles.label}>Delay (Time)</label>
+              <label className={styles.label} style={{ display: 'flex', alignItems: 'center' }}>
+                Delay (Time)
+                <InfoTooltip 
+                  title="Delay"
+                  content="How long until you see results from this task? Lower numbers = faster results. This measures time-to-impact. Examples: Sending an email = 1 (immediate), launching a product = 8-10 (months), a quick sales call = 2-3 (days to close). The formula divides by delay, so faster results = higher leverage score."
+                />
+              </label>
               <input type="number" className={styles.input} value={scoreVars.delay} onChange={e => setScoreVars({...scoreVars, delay: parseFloat(e.target.value) || 1})} />
             </div>
              <div>
-              <label className={styles.label}>Effort</label>
+              <label className={styles.label} style={{ display: 'flex', alignItems: 'center' }}>
+                Effort
+                <InfoTooltip 
+                  title="Effort"
+                  content="How much work, time, or energy does this task require? Lower numbers = less effort. Be honest about the actual time investment. Examples: A 5-minute email = 1-2, a full day project = 7-8, a multi-week initiative = 9-10. The formula divides by effort, so less effort = higher leverage score."
+                />
+              </label>
               <input type="number" className={styles.input} value={scoreVars.effort} onChange={e => setScoreVars({...scoreVars, effort: parseFloat(e.target.value) || 1})} />
             </div>
           </div>

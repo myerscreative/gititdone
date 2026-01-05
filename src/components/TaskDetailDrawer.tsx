@@ -6,6 +6,7 @@ import styles from './TaskDetailDrawer.module.css';
 import { X, Sparkles } from 'lucide-react';
 import { db, auth } from '@/lib/firebase';
 import { useTasks } from '@/context/TaskContext';
+import InfoTooltip from '@/components/InfoTooltip';
 import { 
   collection, 
   addDoc, 
@@ -253,7 +254,13 @@ export default function TaskDetailDrawer({ task: initialTask, onClose }: Props) 
             <div className={styles.sectionTitle}>Leverage Equation</div>
             <div className={styles.mathGrid}>
               <div className={styles.mathItem}>
-                <label className={styles.mathLabel}>Outcome (1-10)</label>
+                <label className={styles.mathLabel} style={{ display: 'flex', alignItems: 'center' }}>
+                  Outcome (1-10)
+                  <InfoTooltip 
+                    title="Outcome"
+                    content="Rate the potential impact or result this task will create on a scale of 0-10. Higher scores mean bigger outcomes. Ask yourself: 'If I complete this perfectly, how much will it move the needle?' Examples: A task that generates $10K/month = 9-10, a task that saves 1 hour/week = 3-4."
+                  />
+                </label>
                 <input 
                   type="number" 
                   className={styles.mathInput}
@@ -263,7 +270,13 @@ export default function TaskDetailDrawer({ task: initialTask, onClose }: Props) 
                 />
               </div>
               <div className={styles.mathItem}>
-                <label className={styles.mathLabel}>Certainty (1-10)</label>
+                <label className={styles.mathLabel} style={{ display: 'flex', alignItems: 'center' }}>
+                  Certainty (1-10)
+                  <InfoTooltip 
+                    title="Certainty"
+                    content="How confident are you that this approach will actually work? Rate from 0-10. Higher scores mean you're more certain it will succeed. Consider: Have you done this before? Do you have a proven system? Is it experimental? A proven system you've used = 8-10, a new untested idea = 3-5."
+                  />
+                </label>
                 <input 
                   type="number" 
                   className={styles.mathInput}
@@ -272,7 +285,13 @@ export default function TaskDetailDrawer({ task: initialTask, onClose }: Props) 
                 />
               </div>
               <div className={styles.mathItem}>
-                <label className={styles.mathLabel}>Time Delay (1-10)</label>
+                <label className={styles.mathLabel} style={{ display: 'flex', alignItems: 'center' }}>
+                  Time Delay (1-10)
+                  <InfoTooltip 
+                    title="Delay"
+                    content="How long until you see results from this task? Lower numbers = faster results. This measures time-to-impact. Examples: Sending an email = 1 (immediate), launching a product = 8-10 (months), a quick sales call = 2-3 (days to close). The formula divides by delay, so faster results = higher leverage score."
+                  />
+                </label>
                 <input 
                   type="number" 
                   className={styles.mathInput}
@@ -282,7 +301,13 @@ export default function TaskDetailDrawer({ task: initialTask, onClose }: Props) 
                 />
               </div>
               <div className={styles.mathItem}>
-                <label className={styles.mathLabel}>Effort (1-10)</label>
+                <label className={styles.mathLabel} style={{ display: 'flex', alignItems: 'center' }}>
+                  Effort (1-10)
+                  <InfoTooltip 
+                    title="Effort"
+                    content="How much work, time, or energy does this task require? Lower numbers = less effort. Be honest about the actual time investment. Examples: A 5-minute email = 1-2, a full day project = 7-8, a multi-week initiative = 9-10. The formula divides by effort, so less effort = higher leverage score."
+                  />
+                </label>
                 <input 
                   type="number" 
                   className={styles.mathInput}
