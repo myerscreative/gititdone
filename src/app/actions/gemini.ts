@@ -1,9 +1,7 @@
-'use server';
-
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { STRATEGIC_INTAKE_PROMPT, STATE_DISRUPTOR_PROMPT, BRAIN_DUMP_TRIAGE_PROMPT } from './prompts';
 
-const apiKey = process.env.GEMINI_API_KEY || '';
+const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
 
 export interface GeneratedTask {
   title: string;
